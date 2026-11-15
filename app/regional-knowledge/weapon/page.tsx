@@ -3,9 +3,18 @@ import { getPublishedWeapons } from "@/lib/queries";
 import { getSession } from "@/lib/session";
 import { SiteHeader } from "@/app/components/SiteHeader";
 import { WEAPON_CATEGORY_LABELS } from "@/lib/regionalKnowledge";
+import type { WeaponCategory } from "@/generated/prisma/client";
 
 export default async function WeaponIndexPage() {
   const [weapons, session] = await Promise.all([getPublishedWeapons(), getSession()]);
+
+  const byCategory = new Map<WeaponCategory, typeof weapons>();
+  for (const w of weapons) {
+    (byCategory.get(w.category) ?? byCategory.set(w.category, []).get(w.category)!).push(w);
+  }
+  const categoryGroups = (Object.keys(WEAPON_CATEGORY_LABELS) as WeaponCategory[])
+    .map((category) => ({ category, items: byCategory.get(category) ?? [] }))
+    .filter((g) => g.items.length > 0);
 
   return (
     <>
@@ -28,27 +37,33 @@ export default async function WeaponIndexPage() {
             No published weapons yet.
           </p>
         ) : (
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            {weapons.map((w) => (
-              <Link
-                key={w.id}
-                href={`/regional-knowledge/weapon/${w.slug}`}
-                className="flex gap-3 rounded border border-border bg-panel p-4 transition-colors hover:border-danger"
-              >
-                {w.imageUrl && (
-                  <div className="h-16 w-24 shrink-0 overflow-hidden rounded border border-border bg-panel-2">
-                    {/* eslint-disable-next-line @next/next/no-img-element -- external, arbitrary-host thumbnail */}
-                    <img src={w.imageUrl} alt="" className="h-full w-full object-cover" />
-                  </div>
-                )}
-                <div className="min-w-0">
-                  <p className="font-mono text-[10px] uppercase tracking-widest text-danger">
-                    {WEAPON_CATEGORY_LABELS[w.category]}
-                  </p>
-                  <h2 className="mt-1 text-sm font-semibold text-foreground">{w.name}</h2>
-                  <p className="mt-1 text-xs text-muted">{w.manufacturer}</p>
+          <div className="flex flex-col gap-8">
+            {categoryGroups.map(({ category, items }) => (
+              <div key={category}>
+                <h2 className="stencil mb-3 border-b border-border pb-2 text-sm tracking-widest text-danger">
+                  {WEAPON_CATEGORY_LABELS[category]} <span className="text-muted">({items.length})</span>
+                </h2>
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  {items.map((w) => (
+                    <Link
+                      key={w.id}
+                      href={`/regional-knowledge/weapon/${w.slug}`}
+                      className="flex gap-3 rounded border border-border bg-panel p-4 transition-colors hover:border-danger"
+                    >
+                      {w.imageUrl && (
+                        <div className="h-16 w-24 shrink-0 overflow-hidden rounded border border-border bg-panel-2">
+                          {/* eslint-disable-next-line @next/next/no-img-element -- external, arbitrary-host thumbnail */}
+                          <img src={w.imageUrl} alt="" className="h-full w-full object-cover" />
+                        </div>
+                      )}
+                      <div className="min-w-0">
+                        <h3 className="text-sm font-semibold text-foreground">{w.name}</h3>
+                        <p className="mt-1 text-xs text-muted">{w.manufacturer}</p>
+                      </div>
+                    </Link>
+                  ))}
                 </div>
-              </Link>
+              </div>
             ))}
           </div>
         )}
