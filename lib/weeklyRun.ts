@@ -48,14 +48,25 @@ export async function generateDraftForRegion(
   // A specific admin-requested topic bypasses the curated RSS list (which
   // isn't query-driven) and searches for exactly that story instead of the
   // most-recent general candidate for the region.
-  const candidates = topic
-    ? await searchWebCandidates(region, { country: options.country, topic })
-    : (
-        await Promise.all([
-          fetchCandidatesForRegion(region, { countryFilter: options.country }),
-          searchWebCandidates(region, { country: options.country }).catch(() => []),
-        ])
-      ).flat();
+  //
+  // For the general (non-topic) pipeline, prioritise the current week:
+  // search a tight 7-day window first, anchored on the article's own
+  // publishing Monday (weekOf) rather than wall-clock "now" — so a
+  // regeneration of a past week windows around that week, not today. Only
+  // if that comes up empty do we widen to a 2-week-prior fallback.
+  const fetchWindow = (cutoffDays: number) =>
+    Promise.all([
+      fetchCandidatesForRegion(region, { countryFilter: options.country, cutoffDays, anchorDate: weekOf }),
+      searchWebCandidates(region, { country: options.country, cutoffDays, anchorDate: weekOf }).catch(() => []),
+    ]).then((results) => results.flat());
+
+  let candidates;
+  if (topic) {
+    candidates = await searchWebCandidates(region, { country: options.country, topic });
+  } else {
+    candidates = await fetchWindow(7);
+    if (candidates.length === 0) candidates = await fetchWindow(14);
+  }
 
   if (candidates.length === 0) throw new NoCandidatesError(options.country ?? region, topic);
 

@@ -29,7 +29,8 @@ async function tryFeedUrls(baseUrl: string): Promise<string[]> {
 async function fetchOneSource(
   name: string,
   sourceUrl: string,
-  cutoff: Date
+  cutoff: Date,
+  anchorDate: Date
 ): Promise<Candidate[]> {
   const candidateFeedUrls = await tryFeedUrls(sourceUrl);
   for (const feedUrl of candidateFeedUrls) {
@@ -45,7 +46,7 @@ async function fetchOneSource(
           publishedAt: item.isoDate ? new Date(item.isoDate) : undefined,
           contentSnippet: item.contentSnippet?.slice(0, 500),
         }))
-        .filter((c) => !c.publishedAt || c.publishedAt >= cutoff)
+        .filter((c) => !c.publishedAt || (c.publishedAt >= cutoff && c.publishedAt <= anchorDate))
         .filter((c) => isRelevant(`${c.title} ${c.contentSnippet ?? ""}`));
       if (items.length > 0) return items;
     } catch {
@@ -58,18 +59,20 @@ async function fetchOneSource(
 /**
  * Best-effort fetch of recent, relevance-filtered headlines for a region's
  * curated sources. Not every source exposes RSS — those simply return no
- * candidates rather than failing the whole run. `cutoffDays` matches the
- * "news dating a month back" requirement.
+ * candidates rather than failing the whole run. `cutoffDays` is measured
+ * back from `anchorDate` (the article's own publishing Monday — `weekOf` —
+ * not wall-clock "now"), so a backdated regeneration windows correctly
+ * around its own week rather than the moment the admin happens to click.
  */
 export async function fetchCandidatesForRegion(
   region: Region,
-  options: { cutoffDays?: number; countryFilter?: string } = {}
+  options: { cutoffDays?: number; anchorDate?: Date; countryFilter?: string } = {}
 ): Promise<Candidate[]> {
-  const { cutoffDays = 35, countryFilter } = options;
-  const cutoff = new Date(Date.now() - cutoffDays * 24 * 60 * 60 * 1000);
+  const { cutoffDays = 35, anchorDate = new Date(), countryFilter } = options;
+  const cutoff = new Date(anchorDate.getTime() - cutoffDays * 24 * 60 * 60 * 1000);
   const sources = SOURCES[region];
   const results = await Promise.allSettled(
-    sources.map((s) => fetchOneSource(s.name, s.url, cutoff))
+    sources.map((s) => fetchOneSource(s.name, s.url, cutoff, anchorDate))
   );
   const candidates = results.flatMap((r) => (r.status === "fulfilled" ? r.value : []));
   if (!countryFilter) return candidates;

@@ -35,19 +35,27 @@ const WebCandidatesSchema = z.object({
  */
 export async function searchWebCandidates(
   region: Region,
-  options: { country?: string; cutoffDays?: number; topic?: string } = {}
+  options: { country?: string; cutoffDays?: number; anchorDate?: Date; topic?: string } = {}
 ): Promise<Candidate[]> {
-  const { country, cutoffDays = 35, topic } = options;
+  const { country, cutoffDays = 35, anchorDate = new Date(), topic } = options;
   const client = new Anthropic();
 
   const focus = country ? `${country} (${REGION_LABELS[region]})` : REGION_LABELS[region];
+
+  // Anchored on the article's own publishing Monday (weekOf), not wall-clock
+  // "now" — matters when regenerating a past week, since the live web-search
+  // tool otherwise resolves "recent" to the actual present day.
+  const windowStart = new Date(anchorDate.getTime() - cutoffDays * 24 * 60 * 60 * 1000)
+    .toISOString()
+    .slice(0, 10);
+  const windowEnd = anchorDate.toISOString().slice(0, 10);
 
   const system = topic
     ? `You are a research assistant for "FIGHTER GROUP INTEL / NEWS UPDATE", an open-source military intelligence briefing. An admin has requested a specific story: use web search to find recent, reliable news about "${topic}", scoped to ${focus}.
 
 Rules:
 - Search specifically for the requested topic — do not substitute a different, unrelated story just because it's more recent or easier to find.
-- Only return stories from the last ${cutoffDays} days, unless the requested topic is inherently about an older/historical event the admin is clearly asking about by name.
+- Only return stories first published between ${windowStart} and ${windowEnd} (inclusive), unless the requested topic is inherently about an older/historical event the admin is clearly asking about by name.
 - Prefer reputable, established outlets (e.g. Reuters, AP, BBC, Jane's, Defense News, The War Zone, Naval News, Breaking Defense, Associated Press, national broadsheets) over unverified blogs or aggregators.
 - Every result MUST be a real article you found via search — never invent a title, outlet, or URL. If search finds fewer than 6 solid results, return fewer; if it finds none at all matching the requested topic, return an empty list rather than substituting something else.
 - Prefer distinct stories over near-duplicates of the same event from the same outlet.
@@ -57,7 +65,7 @@ Rules:
 Focus on: new military developments and procurement, ongoing military tensions, fighter jets, transport aircraft, helicopters, air-to-air and air-to-ground weapons, surface-to-air missiles/systems, long-range weapons, rocket launchers, radar, stealth, unmanned aerial systems/vehicles, next-generation fighters and payloads, reconnaissance, space/orbital projects, indigenous defence programmes, and sea-to-air threats.
 
 Rules:
-- Only return stories from the last ${cutoffDays} days.
+- Only return stories first published between ${windowStart} and ${windowEnd} (inclusive).
 - Prefer reputable, established outlets (e.g. Reuters, AP, BBC, Jane's, Defense News, The War Zone, Naval News, Breaking Defense, Associated Press, national broadsheets) over unverified blogs or aggregators.
 - Every result MUST be a real article you found via search — never invent a title, outlet, or URL. If search finds fewer than 6 solid results, return fewer.
 - Prefer distinct stories over near-duplicates of the same event from the same outlet.
