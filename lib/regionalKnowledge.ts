@@ -67,6 +67,22 @@ export const AIRBASE_UNIT_CATEGORIES: AirbaseUnitCategory[] = [
   "OTHER",
 ];
 
+/** Flag emoji for each country tracked in Regional Knowledge, for the "All Operators" list. */
+export const COUNTRY_FLAGS: Record<string, string> = {
+  Singapore: "🇸🇬",
+  Indonesia: "🇮🇩",
+  Brunei: "🇧🇳",
+  Philippines: "🇵🇭",
+  Vietnam: "🇻🇳",
+  Cambodia: "🇰🇭",
+  Thailand: "🇹🇭",
+  Malaysia: "🇲🇾",
+  Laos: "🇱🇦",
+  Myanmar: "🇲🇲",
+  "Timor-Leste": "🇹🇱",
+  "South China Sea": "🏴",
+};
+
 /** True if any of an airbase's units represent a flying squadron (vs. a ground-only installation). */
 const FLYING_CATEGORIES: AirbaseUnitCategory[] = [
   "FIGHTER_SQUADRON",

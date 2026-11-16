@@ -1,6 +1,6 @@
 import "server-only";
 import { db } from "@/lib/db";
-import type { Region, AviationSafetyRegion, AviationSafetySector } from "@/generated/prisma/client";
+import type { Region, AviationSafetyRegion, AviationSafetySector, AircraftRole } from "@/generated/prisma/client";
 import type { ArticleImage, ArticleSource } from "@/lib/types";
 
 export type ArticleCard = {
@@ -226,11 +226,63 @@ export async function getPublishedAircraft() {
   });
 }
 
-/** One published aircraft platform by slug, with the weapons it's known to carry. */
+/** One published aircraft platform by slug, with its weapons, variant rows, and resident airbases. */
 export async function getAircraftBySlug(slug: string) {
   return db.militaryAircraft.findFirst({
     where: { slug, status: "PUBLISHED" },
-    include: { weapons: { include: { weapon: true } } },
+    include: {
+      weapons: { include: { weapon: true } },
+      variantRows: { orderBy: { sortOrder: "asc" } },
+      units: { include: { airbase: { select: { slug: true, name: true, country: true } } } },
+    },
+  });
+}
+
+/** Other published aircraft sharing the same role, for the "Similar Aircraft" section — excludes self. */
+export async function getSimilarAircraft(aircraftId: string, role: AircraftRole) {
+  return db.militaryAircraft.findMany({
+    where: { status: "PUBLISHED", role, id: { not: aircraftId } },
+    orderBy: { name: "asc" },
+    select: { slug: true, name: true, manufacturer: true, role: true, imageUrl: true },
+  });
+}
+
+/** Every published aircraft, for the comparison picker — name/slug only. */
+export async function getAircraftPickerList() {
+  return db.militaryAircraft.findMany({
+    where: { status: "PUBLISHED" },
+    orderBy: { name: "asc" },
+    select: { slug: true, name: true },
+  });
+}
+
+/** One published aircraft by slug, full record, for the comparison page. */
+export async function getAircraftForCompare(slug: string) {
+  return db.militaryAircraft.findFirst({
+    where: { slug, status: "PUBLISHED" },
+    include: { variantRows: { orderBy: { sortOrder: "asc" } } },
+  });
+}
+
+/**
+ * Published Aviation Safety briefings whose title mentions this aircraft by
+ * name — a lightweight text-match link to the existing incidents dataset
+ * rather than a new events model. Best-effort: only catches stories whose
+ * headline names the type explicitly.
+ */
+export async function getRelatedIncidents(aircraftName: string) {
+  // Use the first "distinctive" word of the name (skip generic prefixes
+  // like manufacturer names already covered elsewhere) — simplest robust
+  // heuristic given free-text titles.
+  const keyword = aircraftName.split(" ").slice(0, 2).join(" ");
+  return db.aviationSafetyArticle.findMany({
+    where: {
+      status: { in: ["PUBLISHED", "ARCHIVED"] },
+      title: { contains: keyword, mode: "insensitive" },
+    },
+    orderBy: { incidentDate: "desc" },
+    take: 5,
+    select: { slug: true, title: true, incidentDate: true, incidentCategory: true },
   });
 }
 

@@ -1,10 +1,16 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getAircraftBySlug } from "@/lib/queries";
+import { getAircraftBySlug, getSimilarAircraft, getRelatedIncidents } from "@/lib/queries";
 import { getSession } from "@/lib/session";
 import { SiteHeader } from "@/app/components/SiteHeader";
 import { SourcesList } from "@/app/components/SourcesList";
-import { AIRCRAFT_ROLE_LABELS, WEAPON_CATEGORY_LABELS, parseOperators, resolveAircraftView } from "@/lib/regionalKnowledge";
+import {
+  AIRCRAFT_ROLE_LABELS,
+  WEAPON_CATEGORY_LABELS,
+  COUNTRY_FLAGS,
+  parseOperators,
+  resolveAircraftView,
+} from "@/lib/regionalKnowledge";
 import type { ArticleSource } from "@/lib/types";
 
 function Stat({ label, value }: { label: string; value: string | number | null | undefined }) {
@@ -13,6 +19,16 @@ function Stat({ label, value }: { label: string; value: string | number | null |
     <div>
       <p className="font-mono text-[10px] uppercase tracking-widest text-muted">{label}</p>
       <p className="text-sm text-foreground">{value}</p>
+    </div>
+  );
+}
+
+function StatBarItem({ label, value }: { label: string; value: string | null }) {
+  if (!value) return null;
+  return (
+    <div className="flex-1 min-w-[120px]">
+      <p className="font-mono text-[10px] uppercase tracking-widest text-muted">{label}</p>
+      <p className="mt-1 text-xl font-bold text-foreground">{value}</p>
     </div>
   );
 }
@@ -29,11 +45,20 @@ export default async function AircraftPage({
   const aircraft = await getAircraftBySlug(slug);
   if (!aircraft) notFound();
 
-  const session = await getSession();
+  const [session, similar, incidents] = await Promise.all([
+    getSession(),
+    getSimilarAircraft(aircraft.id, aircraft.role),
+    getRelatedIncidents(aircraft.name),
+  ]);
+
   const sources: ArticleSource[] = JSON.parse(aircraft.sources);
   const operators = parseOperators(aircraft.operatorsInRegion);
   const view = resolveAircraftView(aircraft, country);
   const viewingOperator = operators.find((o) => o.country === country);
+
+  const airbases = new Map(
+    aircraft.units.filter((u) => u.airbase).map((u) => [u.airbase!.slug, u.airbase!])
+  );
 
   return (
     <>
@@ -46,6 +71,7 @@ export default async function AircraftPage({
           <h1 className="stencil mt-2 text-2xl text-foreground">{aircraft.name}</h1>
           <p className="mt-1 font-mono text-[10px] uppercase tracking-widest text-gold">
             {aircraft.manufacturer} · {AIRCRAFT_ROLE_LABELS[aircraft.role]}
+            {aircraft.originCountry ? ` · ${aircraft.originCountry}` : ""}
           </p>
           {viewingOperator && (
             <p className="mt-2 font-mono text-[10px] uppercase tracking-widest text-accent">
@@ -58,12 +84,41 @@ export default async function AircraftPage({
         {view.imageUrl && (
           <div className="overflow-hidden rounded border border-border bg-panel-2">
             {/* eslint-disable-next-line @next/next/no-img-element -- external, arbitrary-host photo */}
-            <img src={view.imageUrl} alt={`${aircraft.name}${viewingOperator ? ` — ${viewingOperator.country}` : ""}`} className="aspect-video w-full object-cover" />
+            <img
+              src={view.imageUrl}
+              alt={`${aircraft.name}${viewingOperator ? ` — ${viewingOperator.country}` : ""}`}
+              className="aspect-video w-full object-cover"
+            />
           </div>
         )}
 
         <p className="text-sm leading-relaxed text-foreground">{view.description}</p>
 
+        {/* Global reference stats bar — worldwide, not SEA-specific */}
+        {(aircraft.maxSpeed ||
+          aircraft.combatRadiusNm ||
+          aircraft.numberProduced ||
+          aircraft.unitPriceUsdMillions ||
+          aircraft.activeWorldwide) && (
+          <div className="flex flex-wrap gap-4 rounded border border-border bg-panel-2 p-4">
+            <StatBarItem label="Max Speed" value={aircraft.maxSpeed} />
+            <StatBarItem label="Combat Radius" value={aircraft.combatRadiusNm ? `${aircraft.combatRadiusNm} nm` : null} />
+            <StatBarItem label="Produced" value={aircraft.numberProduced ? `${aircraft.numberProduced.toLocaleString()} units` : null} />
+            <StatBarItem label="Avg Unit Price" value={aircraft.unitPriceUsdMillions ? `$${aircraft.unitPriceUsdMillions}M` : null} />
+            <StatBarItem label="Active Worldwide" value={aircraft.activeWorldwide ? aircraft.activeWorldwide.toLocaleString() : null} />
+            <StatBarItem label="Introduced" value={aircraft.yearIntroduced ? String(aircraft.yearIntroduced) : null} />
+          </div>
+        )}
+
+        <div className="flex items-center justify-between">
+          <p className="stencil text-xs tracking-widest text-muted">Technical Specifications</p>
+          <Link
+            href={`/regional-knowledge/aircraft/compare?a=${aircraft.slug}`}
+            className="font-mono text-[10px] uppercase tracking-widest text-accent hover:underline"
+          >
+            ⊞ Compare →
+          </Link>
+        </div>
         <div className="grid grid-cols-2 gap-4 rounded border border-border bg-panel p-4 sm:grid-cols-3">
           <Stat label="First Flight" value={aircraft.firstFlight} />
           <Stat label="Crew" value={aircraft.crew} />
@@ -120,9 +175,47 @@ export default async function AircraftPage({
           </div>
         )}
 
+        {/* Structured variant table, where researched — falls back to the freeform text below */}
+        {aircraft.variantRows.length > 0 ? (
+          <div>
+            <p className="stencil mb-2 text-xs tracking-widest text-muted">Variants</p>
+            <div className="overflow-x-auto rounded border border-border">
+              <table className="w-full min-w-[480px] text-left text-sm">
+                <thead className="bg-panel-2">
+                  <tr>
+                    <th className="p-2 font-mono text-[10px] uppercase tracking-widest text-muted">Variant</th>
+                    <th className="p-2 font-mono text-[10px] uppercase tracking-widest text-muted">Customer</th>
+                    <th className="p-2 font-mono text-[10px] uppercase tracking-widest text-muted">Built / Ordered</th>
+                    <th className="p-2 font-mono text-[10px] uppercase tracking-widest text-muted">Defining Hardware</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {aircraft.variantRows.map((v) => (
+                    <tr key={v.id} className="border-t border-border bg-panel">
+                      <td className="p-2 font-semibold text-foreground">{v.variantName}</td>
+                      <td className="p-2 text-muted">{v.customer ?? "—"}</td>
+                      <td className="p-2 text-muted">{v.builtOrOrdered ?? "—"}</td>
+                      <td className="p-2 text-muted">{v.definingHardware ?? "—"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        ) : (
+          aircraft.variants && (
+            <div>
+              <p className="stencil mb-2 text-xs tracking-widest text-muted">Variants</p>
+              <p className="text-sm leading-relaxed text-foreground">{aircraft.variants}</p>
+            </div>
+          )
+        )}
+
         {operators.length > 0 && (
           <div>
-            <p className="stencil mb-2 text-xs tracking-widest text-muted">Operators in the Region</p>
+            <p className="stencil mb-2 text-xs tracking-widest text-muted">
+              All Operators <span className="text-muted">({operators.length})</span>
+            </p>
             <div className="flex flex-col gap-2">
               {operators.map((op, i) => (
                 <div
@@ -133,7 +226,7 @@ export default async function AircraftPage({
                     href={`/regional-knowledge/aircraft/${aircraft.slug}?country=${encodeURIComponent(op.country)}`}
                     className="font-semibold text-accent hover:underline"
                   >
-                    {op.country}
+                    {COUNTRY_FLAGS[op.country] ?? ""} {op.country}
                   </Link>
                   {op.variant && <span className="text-muted"> — {op.variant}</span>}
                   {op.approxCount ? <span className="text-muted"> · approx. {op.approxCount}</span> : ""}
@@ -150,10 +243,76 @@ export default async function AircraftPage({
           </div>
         )}
 
-        {aircraft.variants && (
+        {airbases.size > 0 && (
           <div>
-            <p className="stencil mb-2 text-xs tracking-widest text-muted">Variants</p>
-            <p className="text-sm leading-relaxed text-foreground">{aircraft.variants}</p>
+            <p className="stencil mb-2 text-xs tracking-widest text-muted">
+              Air Bases <span className="text-muted">({airbases.size})</span>
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {[...airbases.values()].map((b) => (
+                <Link
+                  key={b.slug}
+                  href={`/regional-knowledge/airbase/${b.slug}`}
+                  className="rounded border border-border bg-panel px-3 py-1.5 text-xs text-accent hover:border-accent hover:underline"
+                >
+                  {b.name} ({b.country})
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {incidents.length > 0 && (
+          <div>
+            <p className="stencil mb-2 text-xs tracking-widest text-muted">Related Incidents</p>
+            <div className="flex flex-col gap-2">
+              {incidents.map((inc) => (
+                <Link
+                  key={inc.slug}
+                  href={`/aviation-safety/${inc.slug}`}
+                  className="rounded border border-border bg-panel p-3 text-sm text-foreground hover:border-accent"
+                >
+                  <span className="text-accent">{inc.title}</span>
+                  {inc.incidentDate && (
+                    <span className="ml-2 text-xs text-muted">
+                      {new Date(inc.incidentDate).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })}
+                    </span>
+                  )}
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {similar.length > 0 && (
+          <div>
+            <p className="stencil mb-2 text-xs tracking-widest text-muted">Similar Aircraft</p>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+              {similar.map((a) => (
+                <div
+                  key={a.slug}
+                  className="overflow-hidden rounded border border-border bg-panel transition-colors hover:border-accent"
+                >
+                  <Link href={`/regional-knowledge/aircraft/${a.slug}`}>
+                    {a.imageUrl ? (
+                      <div className="aspect-video w-full overflow-hidden bg-panel-2">
+                        {/* eslint-disable-next-line @next/next/no-img-element -- external, arbitrary-host thumbnail */}
+                        <img src={a.imageUrl} alt={a.name} className="h-full w-full object-cover" />
+                      </div>
+                    ) : (
+                      <div className="aspect-video w-full bg-panel-2" />
+                    )}
+                    <p className="p-2 text-xs font-semibold text-foreground">{a.name}</p>
+                  </Link>
+                  <Link
+                    href={`/regional-knowledge/aircraft/compare?a=${aircraft.slug}&b=${a.slug}`}
+                    className="block border-t border-border px-2 py-1.5 text-center font-mono text-[10px] uppercase tracking-widest text-accent hover:underline"
+                  >
+                    ⊞ Compare
+                  </Link>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
