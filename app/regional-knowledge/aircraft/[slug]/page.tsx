@@ -4,10 +4,8 @@ import { getAircraftBySlug } from "@/lib/queries";
 import { getSession } from "@/lib/session";
 import { SiteHeader } from "@/app/components/SiteHeader";
 import { SourcesList } from "@/app/components/SourcesList";
-import { AIRCRAFT_ROLE_LABELS, WEAPON_CATEGORY_LABELS } from "@/lib/regionalKnowledge";
+import { AIRCRAFT_ROLE_LABELS, WEAPON_CATEGORY_LABELS, parseOperators, resolveAircraftView } from "@/lib/regionalKnowledge";
 import type { ArticleSource } from "@/lib/types";
-
-type Operator = { country: string; variant?: string; approxCount?: number; sources?: ArticleSource[] };
 
 function Stat({ label, value }: { label: string; value: string | number | null | undefined }) {
   if (value === null || value === undefined) return null;
@@ -19,14 +17,23 @@ function Stat({ label, value }: { label: string; value: string | number | null |
   );
 }
 
-export default async function AircraftPage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function AircraftPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<{ country?: string }>;
+}) {
   const { slug } = await params;
+  const { country } = await searchParams;
   const aircraft = await getAircraftBySlug(slug);
   if (!aircraft) notFound();
 
   const session = await getSession();
   const sources: ArticleSource[] = JSON.parse(aircraft.sources);
-  const operators: Operator[] = JSON.parse(aircraft.operatorsInRegion);
+  const operators = parseOperators(aircraft.operatorsInRegion);
+  const view = resolveAircraftView(aircraft, country);
+  const viewingOperator = operators.find((o) => o.country === country);
 
   return (
     <>
@@ -40,16 +47,22 @@ export default async function AircraftPage({ params }: { params: Promise<{ slug:
           <p className="mt-1 font-mono text-[10px] uppercase tracking-widest text-gold">
             {aircraft.manufacturer} · {AIRCRAFT_ROLE_LABELS[aircraft.role]}
           </p>
+          {viewingOperator && (
+            <p className="mt-2 font-mono text-[10px] uppercase tracking-widest text-accent">
+              Viewing: {viewingOperator.country}
+              {viewingOperator.variant ? ` — ${viewingOperator.variant}` : ""}
+            </p>
+          )}
         </div>
 
-        {aircraft.imageUrl && (
+        {view.imageUrl && (
           <div className="overflow-hidden rounded border border-border bg-panel-2">
             {/* eslint-disable-next-line @next/next/no-img-element -- external, arbitrary-host photo */}
-            <img src={aircraft.imageUrl} alt={aircraft.name} className="aspect-video w-full object-cover" />
+            <img src={view.imageUrl} alt={`${aircraft.name}${viewingOperator ? ` — ${viewingOperator.country}` : ""}`} className="aspect-video w-full object-cover" />
           </div>
         )}
 
-        <p className="text-sm leading-relaxed text-foreground">{aircraft.description}</p>
+        <p className="text-sm leading-relaxed text-foreground">{view.description}</p>
 
         <div className="grid grid-cols-2 gap-4 rounded border border-border bg-panel p-4 sm:grid-cols-3">
           <Stat label="First Flight" value={aircraft.firstFlight} />
@@ -112,15 +125,25 @@ export default async function AircraftPage({ params }: { params: Promise<{ slug:
             <p className="stencil mb-2 text-xs tracking-widest text-muted">Operators in the Region</p>
             <div className="flex flex-col gap-2">
               {operators.map((op, i) => (
-                <div key={i} className="rounded border border-border bg-panel p-3 text-sm">
+                <div
+                  key={i}
+                  className={`rounded border p-3 text-sm ${op.country === country ? "border-accent bg-panel-2" : "border-border bg-panel"}`}
+                >
                   <Link
-                    href={`/regional-knowledge/country/${encodeURIComponent(op.country)}`}
+                    href={`/regional-knowledge/aircraft/${aircraft.slug}?country=${encodeURIComponent(op.country)}`}
                     className="font-semibold text-accent hover:underline"
                   >
                     {op.country}
                   </Link>
                   {op.variant && <span className="text-muted"> — {op.variant}</span>}
                   {op.approxCount ? <span className="text-muted"> · approx. {op.approxCount}</span> : ""}
+                  {" · "}
+                  <Link
+                    href={`/regional-knowledge/country/${encodeURIComponent(op.country)}`}
+                    className="text-muted hover:underline"
+                  >
+                    view bases →
+                  </Link>
                 </div>
               ))}
             </div>

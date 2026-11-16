@@ -4,7 +4,7 @@ import { getAirbaseBySlug } from "@/lib/queries";
 import { getSession } from "@/lib/session";
 import { SiteHeader } from "@/app/components/SiteHeader";
 import { SourcesList } from "@/app/components/SourcesList";
-import { AIRBASE_TYPE_LABELS, AIRBASE_UNIT_CATEGORY_LABELS } from "@/lib/regionalKnowledge";
+import { AIRBASE_TYPE_LABELS, AIRBASE_UNIT_CATEGORY_LABELS, resolveAircraftView } from "@/lib/regionalKnowledge";
 import type { ArticleSource } from "@/lib/types";
 
 function Stat({ label, value }: { label: string; value: string | number | null | undefined }) {
@@ -70,7 +70,7 @@ export default async function AirbasePage({ params }: { params: Promise<{ slug: 
                     <p className="mt-0.5 text-xs text-muted">
                       {u.aircraft ? (
                         <Link
-                          href={`/regional-knowledge/aircraft/${u.aircraft.slug}`}
+                          href={`/regional-knowledge/aircraft/${u.aircraft.slug}?country=${encodeURIComponent(base.country)}`}
                           className="text-accent hover:underline"
                         >
                           {u.aircraftType}
@@ -97,23 +97,26 @@ export default async function AirbasePage({ params }: { params: Promise<{ slug: 
             <div>
               <p className="stencil mb-2 text-xs tracking-widest text-muted">Aircraft Based Here</p>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                {[...linkedAircraft.values()].map((a) => (
-                  <Link
-                    key={a.slug}
-                    href={`/regional-knowledge/aircraft/${a.slug}`}
-                    className="overflow-hidden rounded border border-border bg-panel transition-colors hover:border-accent"
-                  >
-                    {a.imageUrl ? (
-                      <div className="aspect-video w-full overflow-hidden bg-panel-2">
-                        {/* eslint-disable-next-line @next/next/no-img-element -- external, arbitrary-host photo */}
-                        <img src={a.imageUrl} alt={a.name} className="h-full w-full object-cover" />
-                      </div>
-                    ) : (
-                      <div className="aspect-video w-full bg-panel-2" />
-                    )}
-                    <p className="p-2 text-xs font-semibold text-foreground">{a.name}</p>
-                  </Link>
-                ))}
+                {[...linkedAircraft.values()].map((a) => {
+                  const view = resolveAircraftView(a, base.country);
+                  return (
+                    <Link
+                      key={a.slug}
+                      href={`/regional-knowledge/aircraft/${a.slug}?country=${encodeURIComponent(base.country)}`}
+                      className="overflow-hidden rounded border border-border bg-panel transition-colors hover:border-accent"
+                    >
+                      {view.imageUrl ? (
+                        <div className="aspect-video w-full overflow-hidden bg-panel-2">
+                          {/* eslint-disable-next-line @next/next/no-img-element -- external, arbitrary-host photo */}
+                          <img src={view.imageUrl} alt={a.name} className="h-full w-full object-cover" />
+                        </div>
+                      ) : (
+                        <div className="aspect-video w-full bg-panel-2" />
+                      )}
+                      <p className="p-2 text-xs font-semibold text-foreground">{a.name}</p>
+                    </Link>
+                  );
+                })}
               </div>
             </div>
           );

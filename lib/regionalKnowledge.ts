@@ -77,3 +77,47 @@ const FLYING_CATEGORIES: AirbaseUnitCategory[] = [
 export function hasFlyingUnit(categories: AirbaseUnitCategory[]): boolean {
   return categories.some((c) => FLYING_CATEGORIES.includes(c));
 }
+
+/**
+ * One SEA operator of a MilitaryAircraft (parsed from its operatorsInRegion
+ * JSON). `description`/`imageUrl` are optional per-operator overrides — set
+ * when the same real-world aircraft type is operated by multiple countries,
+ * so a country's own squadron markings/service details can be shown instead
+ * of whichever country's photo happens to be the record's generic default.
+ */
+export type AircraftOperator = {
+  country: string;
+  variant?: string;
+  approxCount?: number;
+  notes?: string;
+  description?: string;
+  imageUrl?: string;
+};
+
+export function parseOperators(operatorsInRegion: string): AircraftOperator[] {
+  try {
+    return JSON.parse(operatorsInRegion) as AircraftOperator[];
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Resolves what to actually show for an aircraft platform when viewed in a
+ * given country's context (e.g. linked from that country's airbase page):
+ * that operator's own image/description if one has been recorded, else the
+ * record's generic default. Pass no country (or one with no override) to
+ * get the default view.
+ */
+export function resolveAircraftView(
+  aircraft: { description: string; imageUrl: string | null; operatorsInRegion: string },
+  country?: string | null
+): { imageUrl: string | null; description: string; operator: AircraftOperator | null } {
+  const operators = parseOperators(aircraft.operatorsInRegion);
+  const operator = country ? (operators.find((o) => o.country === country) ?? null) : null;
+  return {
+    imageUrl: operator?.imageUrl ?? aircraft.imageUrl,
+    description: operator?.description ?? aircraft.description,
+    operator,
+  };
+}

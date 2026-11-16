@@ -207,7 +207,13 @@ export async function getAirbaseBySlug(slug: string) {
   return db.militaryAirbase.findFirst({
     where: { slug, status: "PUBLISHED" },
     include: {
-      units: { include: { aircraft: { select: { slug: true, name: true, imageUrl: true } } } },
+      units: {
+        include: {
+          aircraft: {
+            select: { slug: true, name: true, imageUrl: true, description: true, operatorsInRegion: true },
+          },
+        },
+      },
     },
   });
 }
