@@ -445,18 +445,43 @@ model MilitaryAircraft {
   maxTakeoffWeightLbs Int?
   armamentSummary     String? // freeform: internal gun, hardpoints, typical loadout
   operatorsInRegion   String // JSON: {country, variant, approxCount, sources}[] — SEA operators only
-  variants            String? // freeform: notable variants and what distinguishes them
+  variants            String? // freeform fallback: used only where no AircraftVariant rows exist
   imageUrl            String?
   sources             String // JSON: {name,url}[] — platform-level sources (manufacturer/Jane's/etc.)
+  // Global reference stats (type-level, not SEA-specific — distinct from operatorsInRegion)
+  originCountry         String? // e.g. "United States" — country of origin/design
+  yearIntroduced        Int? // year the type entered operational service
+  numberProduced        Int? // total built worldwide, all variants, all operators
+  unitPriceUsdMillions  Float? // approximate unit price in current USD millions
+  activeWorldwide       Int? // approximate aircraft in active service worldwide, all operators
   status              ArticleStatus @default(DRAFT)
   createdBy           String        @default("bot")
   createdAt           DateTime      @default(now())
   updatedAt           DateTime      @updatedAt
 
-  weapons AircraftWeapon[]
-  units   AirbaseUnit[]
+  weapons  AircraftWeapon[]
+  units    AirbaseUnit[]
+  variantRows AircraftVariant[]
 
   @@index([status])
+}
+
+// One production variant/block of a MilitaryAircraft (e.g. "F-15C/D"),
+// shown as a row in the platform's variant comparison table. Distinct from
+// the per-operator entries in MilitaryAircraft.operatorsInRegion, which
+// cover only SEA operators — these rows cover the type's worldwide
+// production history.
+model AircraftVariant {
+  id               String           @id @default(cuid())
+  aircraftId       String
+  aircraft         MilitaryAircraft @relation(fields: [aircraftId], references: [id], onDelete: Cascade)
+  variantName      String // e.g. "F-15C/D"
+  customer         String? // e.g. "USAF, Israel, Saudi Arabia"
+  builtOrOrdered   String? // freeform: e.g. "483/92, 1979-1985"
+  definingHardware String? // freeform: e.g. "APG-63 with PSP, conformal tank provisions"
+  sortOrder        Int              @default(0)
+
+  @@index([aircraftId])
 }
 
 enum WeaponCategory {
