@@ -91,7 +91,14 @@ export type AircraftOperator = {
   approxCount?: number;
   notes?: string;
   description?: string;
-  imageUrl?: string;
+  imageUrl?: string | null;
+  /**
+   * True once this operator has been through the country-specific
+   * verification pass — i.e. its description/imageUrl are deliberate,
+   * checked results (imageUrl: null here means "confirmed no genuine photo
+   * of this country's own aircraft exists," not "nobody looked yet").
+   */
+  researched?: boolean;
 };
 
 export function parseOperators(operatorsInRegion: string): AircraftOperator[] {
@@ -104,10 +111,18 @@ export function parseOperators(operatorsInRegion: string): AircraftOperator[] {
 
 /**
  * Resolves what to actually show for an aircraft platform when viewed in a
- * given country's context (e.g. linked from that country's airbase page):
- * that operator's own image/description if one has been recorded, else the
- * record's generic default. Pass no country (or one with no override) to
- * get the default view.
+ * given country's context (e.g. linked from that country's airbase page).
+ *
+ * Once an operator has been `researched`, it is authoritative for that
+ * country's view: its own description always applies, and its imageUrl is
+ * shown as-is — including when that's `null`, meaning no genuine photo of
+ * that country's own aircraft could be verified. In that case we do NOT
+ * fall back to the record's generic default image, since that default may
+ * itself be a different (possibly wrong) country's aircraft — showing
+ * nothing is more honest than showing the wrong photo again.
+ *
+ * An unresearched operator (or no country given) falls back to the
+ * record's generic default for both fields.
  */
 export function resolveAircraftView(
   aircraft: { description: string; imageUrl: string | null; operatorsInRegion: string },
@@ -115,9 +130,16 @@ export function resolveAircraftView(
 ): { imageUrl: string | null; description: string; operator: AircraftOperator | null } {
   const operators = parseOperators(aircraft.operatorsInRegion);
   const operator = country ? (operators.find((o) => o.country === country) ?? null) : null;
+  if (operator?.researched) {
+    return {
+      imageUrl: operator.imageUrl ?? null,
+      description: operator.description ?? aircraft.description,
+      operator,
+    };
+  }
   return {
-    imageUrl: operator?.imageUrl ?? aircraft.imageUrl,
-    description: operator?.description ?? aircraft.description,
+    imageUrl: aircraft.imageUrl,
+    description: aircraft.description,
     operator,
   };
 }
