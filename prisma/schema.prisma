@@ -454,6 +454,13 @@ model MilitaryAircraft {
   numberProduced        Int? // total built worldwide, all variants, all operators
   unitPriceUsdMillions  Float? // approximate unit price in current USD millions
   activeWorldwide       Int? // approximate aircraft in active service worldwide, all operators
+  // Performance stats used by the comparison tool. Null where genuinely
+  // unconfirmed or not applicable (e.g. totalThrustLbs for propeller types,
+  // turnRateDegSec for most non-fighter/attack types).
+  totalThrustLbs        Float? // combined max/afterburner thrust, lbf — jet-powered types only
+  maxSpeedKnots         Float? // numeric max speed, knots TAS (converted from Mach where needed)
+  rangeNm               Int? // max/ferry range, nm — distinct from combatRadiusNm (tactical radius)
+  turnRateDegSec        Float? // sustained turn rate, deg/sec — mostly fighters/attack aircraft
   status              ArticleStatus @default(DRAFT)
   createdBy           String        @default("bot")
   createdAt           DateTime      @default(now())

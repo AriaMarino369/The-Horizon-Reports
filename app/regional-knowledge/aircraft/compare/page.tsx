@@ -11,10 +11,15 @@ type Metric = {
   get: (a: NonNullable<Awaited<ReturnType<typeof getAircraftForCompare>>>) => number | null;
 };
 
+// Full diff-table rows — every comparable numeric spec this database tracks.
 const METRICS: Metric[] = [
+  { label: "Total Thrust", unit: "lbf", get: (a) => a.totalThrustLbs },
+  { label: "Max Weight", unit: "lbs", get: (a) => a.maxTakeoffWeightLbs },
+  { label: "Max Speed", unit: "kt", get: (a) => a.maxSpeedKnots },
+  { label: "Operational Range", unit: "nm", get: (a) => a.rangeNm },
   { label: "Combat Radius", unit: "nm", get: (a) => a.combatRadiusNm },
-  { label: "Service Ceiling", unit: "ft", get: (a) => a.serviceCeilingFt },
-  { label: "Max Takeoff Weight", unit: "lbs", get: (a) => a.maxTakeoffWeightLbs },
+  { label: "Operational Ceiling", unit: "ft", get: (a) => a.serviceCeilingFt },
+  { label: "Turn Radius Performance", unit: "°/s", get: (a) => a.turnRateDegSec },
   { label: "Length", unit: "ft", get: (a) => a.lengthFt },
   { label: "Wingspan", unit: "ft", get: (a) => a.wingspanFt },
   { label: "Height", unit: "ft", get: (a) => a.heightFt },
@@ -22,6 +27,17 @@ const METRICS: Metric[] = [
   { label: "Number Produced", unit: "units", get: (a) => a.numberProduced },
   { label: "Unit Price", unit: "$M", get: (a) => a.unitPriceUsdMillions },
   { label: "Active Worldwide", unit: "", get: (a) => a.activeWorldwide },
+];
+
+// The 6 axes shown on the "At a Glance" radar chart specifically — a fixed
+// set distinct from the full table above, per product spec.
+const RADAR_METRICS: Metric[] = [
+  { label: "Total Thrust", unit: "lbf", get: (a) => a.totalThrustLbs },
+  { label: "Max Weight", unit: "lbs", get: (a) => a.maxTakeoffWeightLbs },
+  { label: "Max Speed", unit: "kt", get: (a) => a.maxSpeedKnots },
+  { label: "Operational Range", unit: "nm", get: (a) => a.rangeNm },
+  { label: "Operational Ceiling", unit: "ft", get: (a) => a.serviceCeilingFt },
+  { label: "Turn Radius Performance", unit: "°/s", get: (a) => a.turnRateDegSec },
 ];
 
 function RadarChart({
@@ -242,7 +258,7 @@ export default async function ComparePage({
             </div>
 
             {(() => {
-              const chartMetrics = METRICS.filter((m) => m.get(aircraftA) !== null && m.get(aircraftB) !== null);
+              const chartMetrics = RADAR_METRICS.filter((m) => m.get(aircraftA) !== null && m.get(aircraftB) !== null);
               if (chartMetrics.length < 3) return null;
               return (
                 <div className="rounded border border-border bg-panel p-4">

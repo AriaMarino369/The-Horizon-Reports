@@ -135,6 +135,15 @@ export default async function AircraftPage({
             label="Max Takeoff Weight"
             value={aircraft.maxTakeoffWeightLbs ? `${aircraft.maxTakeoffWeightLbs.toLocaleString()} lbs` : null}
           />
+          <Stat label="Operational Range" value={aircraft.rangeNm ? `${aircraft.rangeNm.toLocaleString()} nm` : null} />
+          <Stat
+            label="Total Thrust"
+            value={aircraft.totalThrustLbs ? `${aircraft.totalThrustLbs.toLocaleString()} lbf` : null}
+          />
+          <Stat
+            label="Turn Radius Performance"
+            value={aircraft.turnRateDegSec ? `${aircraft.turnRateDegSec}°/s sustained` : null}
+          />
         </div>
 
         {aircraft.armamentSummary && (
