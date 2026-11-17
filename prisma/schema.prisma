@@ -433,7 +433,9 @@ model MilitaryAircraft {
   name                String // e.g. "F-16 Fighting Falcon"
   manufacturer        String // e.g. "General Dynamics / Lockheed Martin"
   role                AircraftRole
-  description         String // 2-4 sentence overview: origin, role, general context
+  description         String // 2-4 sentence overview: origin, role, general context — generic/type-level, no country-specific operator detail (that lives in operatorsInRegion)
+  development         String? // paragraph: design origin, manufacturer rationale, prototype/first-flight history — generic/global
+  operationalHistory  String? // paragraph: global service history, notable operators/conflicts worldwide — generic, not SEA-scoped
   firstFlight         String? // free text (year or date) — precision varies by source
   crew                Int?
   lengthFt            Float?
@@ -461,6 +463,17 @@ model MilitaryAircraft {
   maxSpeedKnots         Float? // numeric max speed, knots TAS (converted from Mach where needed)
   rangeNm               Int? // max/ferry range, nm — distinct from combatRadiusNm (tactical radius)
   turnRateDegSec        Float? // sustained turn rate, deg/sec — mostly fighters/attack aircraft
+  // "Recent Events" — a single latest reliable news item about this type
+  // (upgrades, damage, shoot-downs, crashes, new variants), kept fresh by a
+  // fortnightly scheduled job (see lib/aircraftNewsRun.ts). Retained as-is
+  // when a refresh finds nothing new; recentEventRefreshedAt (not the
+  // article's own date) drives the fortnightly staleness check.
+  recentEventTitle        String?
+  recentEventUrl          String?
+  recentEventSourceName   String?
+  recentEventSummary      String?
+  recentEventPublishedAt  DateTime?
+  recentEventRefreshedAt  DateTime?
   status              ArticleStatus @default(DRAFT)
   createdBy           String        @default("bot")
   createdAt           DateTime      @default(now())

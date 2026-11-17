@@ -99,6 +99,22 @@ export default async function AircraftPage({
 
         <p className="text-sm leading-relaxed text-foreground">{view.description}</p>
 
+        {/* Development / Operational History — always the generic, worldwide
+            narrative regardless of which country's view is selected (unlike
+            Description above, which swaps per-operator via resolveAircraftView). */}
+        {aircraft.development && (
+          <div>
+            <p className="stencil mb-2 text-xs tracking-widest text-muted">Development</p>
+            <p className="text-sm leading-relaxed text-foreground">{aircraft.development}</p>
+          </div>
+        )}
+        {aircraft.operationalHistory && (
+          <div>
+            <p className="stencil mb-2 text-xs tracking-widest text-muted">Operational History</p>
+            <p className="text-sm leading-relaxed text-foreground">{aircraft.operationalHistory}</p>
+          </div>
+        )}
+
         {/* Global reference stats bar — worldwide, not SEA-specific */}
         {(aircraft.maxSpeed ||
           aircraft.combatRadiusNm ||
@@ -273,6 +289,29 @@ export default async function AircraftPage({
                 </Link>
               ))}
             </div>
+          </div>
+        )}
+
+        {aircraft.recentEventTitle && aircraft.recentEventUrl && (
+          <div>
+            <p className="stencil mb-2 text-xs tracking-widest text-muted">Recent Events</p>
+            <a
+              href={aircraft.recentEventUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block rounded border border-border bg-panel p-3 text-sm hover:border-accent"
+            >
+              <p className="text-accent">{aircraft.recentEventTitle}</p>
+              {aircraft.recentEventSummary && (
+                <p className="mt-1 text-foreground">{aircraft.recentEventSummary}</p>
+              )}
+              <p className="mt-1 font-mono text-[10px] uppercase tracking-widest text-muted">
+                {aircraft.recentEventSourceName}
+                {aircraft.recentEventPublishedAt
+                  ? ` · ${aircraft.recentEventPublishedAt.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}`
+                  : ""}
+              </p>
+            </a>
           </div>
         )}
 

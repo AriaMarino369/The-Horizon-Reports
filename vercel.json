@@ -8,6 +8,10 @@
     {
       "path": "/api/cron/weekly-generate",
       "schedule": "0 1 * * 1"
+    },
+    {
+      "path": "/api/cron/aircraft-news-refresh",
+      "schedule": "0 9 * * 1"
     }
   ]
 }
