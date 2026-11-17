@@ -4,6 +4,7 @@ import { getAirbaseBySlug } from "@/lib/queries";
 import { getSession } from "@/lib/session";
 import { SiteHeader } from "@/app/components/SiteHeader";
 import { SourcesList } from "@/app/components/SourcesList";
+import { AircraftSilhouette } from "@/app/components/AircraftSilhouette";
 import { AIRBASE_TYPE_LABELS, AIRBASE_UNIT_CATEGORY_LABELS, resolveAircraftView } from "@/lib/regionalKnowledge";
 import type { ArticleSource } from "@/lib/types";
 
@@ -111,7 +112,7 @@ export default async function AirbasePage({ params }: { params: Promise<{ slug: 
                           <img src={view.imageUrl} alt={a.name} className="h-full w-full object-cover" />
                         </div>
                       ) : (
-                        <div className="aspect-video w-full bg-panel-2" />
+                        <AircraftSilhouette role={a.role} className="aspect-video w-full" />
                       )}
                       <p className="p-2 text-xs font-semibold text-foreground">{a.name}</p>
                     </Link>

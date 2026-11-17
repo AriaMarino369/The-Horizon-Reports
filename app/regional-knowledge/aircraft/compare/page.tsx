@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getAircraftForCompare, getAircraftPickerList } from "@/lib/queries";
 import { getSession } from "@/lib/session";
 import { SiteHeader } from "@/app/components/SiteHeader";
+import { AircraftSilhouette } from "@/app/components/AircraftSilhouette";
 import { AIRCRAFT_ROLE_LABELS } from "@/lib/regionalKnowledge";
 
 type Metric = {
@@ -189,11 +190,13 @@ export default async function ComparePage({
             <div className="grid grid-cols-2 gap-3">
               {[aircraftA, aircraftB].map((ac, idx) => (
                 <div key={ac.slug} className="overflow-hidden rounded border border-border bg-panel">
-                  {ac.imageUrl && (
+                  {ac.imageUrl ? (
                     <div className="aspect-video w-full overflow-hidden bg-panel-2">
                       {/* eslint-disable-next-line @next/next/no-img-element -- external, arbitrary-host photo */}
                       <img src={ac.imageUrl} alt={ac.name} className="h-full w-full object-cover" />
                     </div>
+                  ) : (
+                    <AircraftSilhouette role={ac.role} className="aspect-video w-full" />
                   )}
                   <div className="p-2">
                     <p className={`text-xs font-semibold ${idx === 0 ? "text-accent" : "text-gold"}`}>{ac.name}</p>

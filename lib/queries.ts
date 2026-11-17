@@ -210,7 +210,7 @@ export async function getAirbaseBySlug(slug: string) {
       units: {
         include: {
           aircraft: {
-            select: { slug: true, name: true, imageUrl: true, description: true, operatorsInRegion: true },
+            select: { slug: true, name: true, role: true, imageUrl: true, description: true, operatorsInRegion: true },
           },
         },
       },

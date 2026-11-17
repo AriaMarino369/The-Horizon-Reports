@@ -4,6 +4,7 @@ import { getAircraftBySlug, getSimilarAircraft, getRelatedIncidents } from "@/li
 import { getSession } from "@/lib/session";
 import { SiteHeader } from "@/app/components/SiteHeader";
 import { SourcesList } from "@/app/components/SourcesList";
+import { AircraftSilhouette } from "@/app/components/AircraftSilhouette";
 import {
   AIRCRAFT_ROLE_LABELS,
   WEAPON_CATEGORY_LABELS,
@@ -81,7 +82,7 @@ export default async function AircraftPage({
           )}
         </div>
 
-        {view.imageUrl && (
+        {view.imageUrl ? (
           <div className="overflow-hidden rounded border border-border bg-panel-2">
             {/* eslint-disable-next-line @next/next/no-img-element -- external, arbitrary-host photo */}
             <img
@@ -89,6 +90,10 @@ export default async function AircraftPage({
               alt={`${aircraft.name}${viewingOperator ? ` — ${viewingOperator.country}` : ""}`}
               className="aspect-video w-full object-cover"
             />
+          </div>
+        ) : (
+          <div className="overflow-hidden rounded border border-border">
+            <AircraftSilhouette role={aircraft.role} className="aspect-video w-full" />
           </div>
         )}
 
@@ -309,7 +314,7 @@ export default async function AircraftPage({
                         <img src={a.imageUrl} alt={a.name} className="h-full w-full object-cover" />
                       </div>
                     ) : (
-                      <div className="aspect-video w-full bg-panel-2" />
+                      <AircraftSilhouette role={a.role} className="aspect-video w-full" />
                     )}
                     <p className="p-2 text-xs font-semibold text-foreground">{a.name}</p>
                   </Link>
