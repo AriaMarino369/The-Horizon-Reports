@@ -1,18 +1,23 @@
 import "server-only";
 
+export type TelegramSendResult = { ok: boolean; error?: string };
+
 /**
  * Sends a message to a Telegram chat via the Bot API. Never throws — a
  * missing/misconfigured Telegram setup or a transient API failure should
- * never fail the weekly publish run that calls this; failures are only
- * logged so Vercel's function logs surface the problem.
+ * never fail the weekly publish run that calls this; failures are reported
+ * back via the return value (for callers that want to surface them, like the
+ * admin "send test" action) AND logged, so Vercel's function logs also
+ * surface the problem even for fire-and-forget callers that ignore it.
  */
-export async function notifyTelegram(text: string): Promise<void> {
+export async function notifyTelegram(text: string): Promise<TelegramSendResult> {
   const token = process.env.TELEGRAM_BOT_TOKEN;
   const chatId = process.env.TELEGRAM_CHAT_ID;
 
   if (!token || !chatId) {
-    console.warn("[telegramNotify] TELEGRAM_BOT_TOKEN/TELEGRAM_CHAT_ID not configured — skipping notification.");
-    return;
+    const error = "TELEGRAM_BOT_TOKEN/TELEGRAM_CHAT_ID not configured.";
+    console.warn(`[telegramNotify] ${error} Skipping notification.`);
+    return { ok: false, error };
   }
 
   try {
@@ -28,10 +33,15 @@ export async function notifyTelegram(text: string): Promise<void> {
     });
     if (!res.ok) {
       const body = await res.text().catch(() => "");
-      console.error(`[telegramNotify] Telegram API returned ${res.status}: ${body}`);
+      const error = `Telegram API returned ${res.status}: ${body}`;
+      console.error(`[telegramNotify] ${error}`);
+      return { ok: false, error };
     }
+    return { ok: true };
   } catch (err) {
+    const error = err instanceof Error ? err.message : String(err);
     console.error("[telegramNotify] Failed to send Telegram notification:", err);
+    return { ok: false, error };
   }
 }
 
@@ -60,4 +70,12 @@ export async function notifyWeeklyPublished(
 
   const text = `📰 <b>${articles.length} new briefing${articles.length === 1 ? "" : "s"} published this week</b>\n\n${lines.join("\n\n")}`;
   await notifyTelegram(text);
+}
+
+/** Sends a short, obviously-a-test message so an admin can confirm the Telegram setup actually works end to end. */
+export async function sendTestTelegramMessage(): Promise<TelegramSendResult> {
+  const origin = siteOrigin();
+  return notifyTelegram(
+    `✅ <b>Test notification</b> from The Horizon Reports admin panel.\n\nIf you can see this, the weekly "new articles published" notification is wired up correctly.\n\n${origin}`
+  );
 }

@@ -16,6 +16,7 @@ import { generateAviationSafetyArticle, aviationSlug } from "@/lib/generateAviat
 import { publishAviationSafetyArticle } from "@/lib/publishAviationSafety";
 import { mondayOf } from "@/lib/weeks";
 import { getMonth, getYear } from "date-fns";
+import { sendTestTelegramMessage } from "@/lib/telegramNotify";
 import type { Region, AviationSafetyRegion, AirbaseType, AirbaseUnitCategory } from "@/generated/prisma/client";
 import type { ArticleImage, ArticleSource } from "@/lib/types";
 import { slugify } from "@/lib/slug";
@@ -936,4 +937,22 @@ export async function deleteAirbaseUnitAction(formData: FormData) {
   await db.airbaseUnit.delete({ where: { id } });
   revalidatePath(`/admin/regional-knowledge/edit/${airbaseId}`);
   revalidatePath("/regional-knowledge");
+}
+
+/**
+ * Lets an admin confirm the Telegram setup actually works — sends a real
+ * test message via whatever TELEGRAM_BOT_TOKEN/TELEGRAM_CHAT_ID are set in
+ * this deployment's environment, without the admin ever having to share
+ * that token in chat with anyone helping set it up.
+ */
+export async function sendTestTelegramAction(
+  _state: AdminActionState,
+  _formData: FormData
+): Promise<AdminActionState> {
+  await requireAdmin();
+  const result = await sendTestTelegramMessage();
+  if (!result.ok) {
+    return { error: result.error ?? "Failed to send — check the server logs for details." };
+  }
+  return { ok: true };
 }

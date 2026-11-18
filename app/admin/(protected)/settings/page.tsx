@@ -1,6 +1,7 @@
 import { db } from "@/lib/db";
 import { CORE_REGIONS, OPTIONAL_REGIONS, REGION_LABELS, SOURCES } from "@/lib/sources";
 import { toggleRegionAction, createInviteAction, revokeInviteAction } from "@/app/actions/admin";
+import { TelegramTestForm } from "./TelegramTestForm";
 
 export default async function SettingsPage() {
   const settings = await db.regionSetting.findMany();
@@ -66,6 +67,25 @@ export default async function SettingsPage() {
             </div>
           ))}
         </div>
+      </section>
+
+      <section>
+        <h2 className="stencil mb-2 text-xl text-foreground">Notifications</h2>
+        <p className="mb-4 font-mono text-xs text-muted">
+          Posts a digest to Telegram every Monday after new weekly briefings publish. Configure{" "}
+          <code>TELEGRAM_BOT_TOKEN</code> and <code>TELEGRAM_CHAT_ID</code> (plus optionally{" "}
+          <code>SITE_URL</code>) in your deployment&apos;s environment variables, then use the
+          button below to confirm it actually reaches your chat.
+        </p>
+        <p className="mb-4 font-mono text-xs">
+          Telegram env vars:{" "}
+          {process.env.TELEGRAM_BOT_TOKEN && process.env.TELEGRAM_CHAT_ID ? (
+            <span className="text-accent-strong">configured</span>
+          ) : (
+            <span className="text-danger">not configured</span>
+          )}
+        </p>
+        <TelegramTestForm />
       </section>
 
       <section>
