@@ -1,4 +1,4 @@
-// FIGHTER GROUP INTEL / NEWS UPDATE — data model
+// THE HORIZON REPORTS — data model
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
