@@ -12,6 +12,14 @@
     {
       "path": "/api/cron/aircraft-news-refresh",
       "schedule": "0 9 * * 1"
+    },
+    {
+      "path": "/api/cron/trending-news-refresh",
+      "schedule": "0 1 * * *"
+    },
+    {
+      "path": "/api/cron/trending-news-refresh",
+      "schedule": "0 13 * * *"
     }
   ]
 }

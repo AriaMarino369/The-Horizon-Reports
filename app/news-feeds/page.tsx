@@ -1,11 +1,16 @@
 import { getSession } from "@/lib/session";
 import { SiteHeader } from "@/app/components/SiteHeader";
 import { fetchAllNewsFeedItems, type NewsFeedItem } from "@/lib/newsFeed";
+import { getActiveTrendingIncidents } from "@/lib/queries";
+import { TrendingNewsMapLoader } from "@/app/components/TrendingNewsMapLoader";
+import type { TrendingIncidentMapData } from "@/app/components/TrendingNewsMap";
 import { format } from "date-fns";
 
 // Regenerated in the background at most once an hour (Vercel ISR) rather
 // than on every request — these are live RSS fetches across 8 outlets, no
-// need to re-run that for every page view.
+// need to re-run that for every page view. The map's own data is DB-backed
+// and only actually changes twice a day (see the trending-news-refresh
+// cron), so the same hourly ISR window is more than fresh enough for it too.
 export const revalidate = 3600;
 
 async function loadFeedItems(): Promise<{ items: NewsFeedItem[]; error: string | null }> {
@@ -18,7 +23,26 @@ async function loadFeedItems(): Promise<{ items: NewsFeedItem[]; error: string |
 }
 
 export default async function NewsFeedsPage() {
-  const [{ items, error }, session] = await Promise.all([loadFeedItems(), getSession()]);
+  const [{ items, error }, session, incidentRows] = await Promise.all([
+    loadFeedItems(),
+    getSession(),
+    getActiveTrendingIncidents(),
+  ]);
+
+  const incidents: TrendingIncidentMapData[] = incidentRows.map((i) => ({
+    id: i.id,
+    country: i.country,
+    countryCode: i.countryCode,
+    latitude: i.latitude,
+    longitude: i.longitude,
+    category: i.category,
+    title: i.title,
+    summary: i.summary,
+    sourceName: i.sourceName,
+    sourceUrl: i.sourceUrl,
+    originalLanguage: i.originalLanguage,
+    publishedAt: i.publishedAt ? i.publishedAt.toISOString() : null,
+  }));
 
   return (
     <>
@@ -31,6 +55,19 @@ export default async function NewsFeedsPage() {
             English, Reuters, ANTARA News, Astro AWANI, The Jerusalem Post, and Associated
             Press — refreshed automatically roughly every hour.
           </p>
+        </div>
+
+        <div>
+          <h2 className="stencil text-lg text-foreground">Global Conflict Map</h2>
+          <p className="mt-1 max-w-2xl font-mono text-xs text-muted">
+            Current air-power-relevant conflict incidents worldwide — airstrikes, UAV/drone
+            activity, air-defence engagements, aircraft losses, and non-kinetic actions. At
+            most one pin per country, auto-refreshed twice daily and auto-cleared after about
+            a day. Hover or tap a pin for the source and summary.
+          </p>
+          <div className="mt-3">
+            <TrendingNewsMapLoader incidents={incidents} />
+          </div>
         </div>
 
         {error ? (

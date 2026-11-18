@@ -17,6 +17,7 @@ import { publishAviationSafetyArticle } from "@/lib/publishAviationSafety";
 import { mondayOf } from "@/lib/weeks";
 import { getMonth, getYear } from "date-fns";
 import { sendTestTelegramMessage } from "@/lib/telegramNotify";
+import { runTrendingNewsRefresh } from "@/lib/trendingNewsRun";
 import type { Region, AviationSafetyRegion, AirbaseType, AirbaseUnitCategory } from "@/generated/prisma/client";
 import type { ArticleImage, ArticleSource } from "@/lib/types";
 import { slugify } from "@/lib/slug";
@@ -955,4 +956,29 @@ export async function sendTestTelegramAction(
     return { error: result.error ?? "Failed to send — check the server logs for details." };
   }
   return { ok: true };
+}
+
+/**
+ * Lets an admin manually fire the Trending News world-map refresh instead of
+ * waiting for its twice-daily schedule — e.g. to trial the feature right
+ * after setting it up, or to pull in a breaking incident immediately.
+ */
+export type TrendingRefreshState = { error?: string; message?: string } | undefined;
+
+export async function runTrendingNewsRefreshAction(
+  _state: TrendingRefreshState,
+  _formData: FormData
+): Promise<TrendingRefreshState> {
+  await requireAdmin();
+  let result;
+  try {
+    result = await runTrendingNewsRefresh();
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : String(e) };
+  }
+  revalidatePath("/news-feeds");
+  revalidatePath("/admin/generate");
+  return {
+    message: `Found ${result.candidatesFound} candidate incident(s) — ${result.created} new pin(s) published, ${result.skippedUnresolvedCountry} skipped (unresolved country), ${result.expired} expired. ${result.activeCount} active on the map now.`,
+  };
 }

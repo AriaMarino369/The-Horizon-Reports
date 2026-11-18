@@ -402,3 +402,11 @@ export async function getArticlesForWeek(weekOf: Date) {
   });
   return rows.map(toCard);
 }
+
+/** All currently-active (PUBLISHED, not yet expired) Trending News incidents for the world map. */
+export async function getActiveTrendingIncidents() {
+  return db.trendingIncident.findMany({
+    where: { status: "PUBLISHED" },
+    orderBy: { publishedAt: "desc" },
+  });
+}

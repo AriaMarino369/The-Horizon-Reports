@@ -33,6 +33,15 @@ enum AircraftCategory {
   COMMERCIAL_AIRLINER
 }
 
+enum TrendingCategory {
+  AIRSTRIKE
+  UAV_DRONE
+  AIR_DEFENSE
+  AIRCRAFT_LOSS
+  NON_KINETIC
+  OTHER
+}
+
 model Article {
   id               String        @id @default(cuid())
   slug             String        @unique
@@ -561,4 +570,36 @@ model AircraftWeapon {
   @@unique([aircraftId, weaponId])
   @@index([aircraftId])
   @@index([weaponId])
+}
+
+// A single geotagged, world-scale "trending news" pin — a current,
+// air-power-relevant conflict incident (airstrike, UAV/drone strike, air
+// defence engagement, aircraft loss, or non-kinetic action) for the
+// Trending News heat map. At most one PUBLISHED row per country at a time
+// (enforced in lib/trendingNewsRun.ts, belt-and-braced by the partial
+// unique index below) — keeps the map from getting cluttered as new
+// incidents replace stale ones rather than piling up. Refreshed twice daily
+// (see app/api/cron/trending-news-refresh/route.ts); any row whose
+// publishedAt (or createdAt, if undated) falls outside the rolling
+// freshness window is auto-archived every run even if nothing replaces it.
+model TrendingIncident {
+  id            String            @id @default(cuid())
+  country       String // canonical country name, matches world-countries' name.common (lib/worldCountries.ts)
+  countryCode   String? // ISO 3166-1 alpha-2
+  latitude      Float
+  longitude     Float
+  category      TrendingCategory  @default(OTHER)
+  title         String
+  summary       String // 2-4 sentence English summary, translated if the source wasn't English
+  sourceName    String
+  sourceUrl     String
+  originalLanguage String? // ISO 639-1 code of the original reporting language, null if already English
+  publishedAt   DateTime?
+  status        ArticleStatus     @default(PUBLISHED)
+  createdBy     String            @default("bot")
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  @@index([status])
+  @@index([country])
 }

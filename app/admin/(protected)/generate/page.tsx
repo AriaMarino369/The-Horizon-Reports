@@ -2,6 +2,7 @@ import { db } from "@/lib/db";
 import { GenerateForm } from "@/app/admin/(protected)/generate/GenerateForm";
 import { FunFactForm } from "@/app/admin/(protected)/generate/FunFactForm";
 import { AircraftRecognitionForm } from "@/app/admin/(protected)/generate/AircraftRecognitionForm";
+import { TrendingNewsRefreshForm } from "@/app/admin/(protected)/generate/TrendingNewsRefreshForm";
 import { REGION_LABELS } from "@/lib/sources";
 import { proxiedImageUrl } from "@/lib/imageProxy";
 import {
@@ -432,6 +433,10 @@ export default async function GeneratePage({
           </>
         );
       })()}
+
+      <hr className="my-2 border-border" />
+
+      <TrendingNewsRefreshForm />
     </div>
   );
 }
