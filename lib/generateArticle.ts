@@ -65,7 +65,7 @@ export async function generateArticleDraft(params: {
 
   const client = new Anthropic();
 
-  const system = `You are the editorial desk for "FIGHTER GROUP INTEL / NEWS UPDATE", an open-source military intelligence briefing covering defence and military-technology developments (procurement, tensions, aircraft, weapons, air defence, radar, stealth, UAS/UAV, next-generation fighters, ISR, space, indigenous programmes, and sea-to-air threats) for Singapore, South-East Asia, the USA and the world.
+  const system = `You are the editorial desk for "The Horizon Reports", an open-source military intelligence briefing covering defence and military-technology developments (procurement, tensions, aircraft, weapons, air defence, radar, stealth, UAS/UAV, next-generation fighters, ISR, space, indigenous programmes, and sea-to-air threats) for Singapore, South-East Asia, the USA and the world.
 
 House style, per article:
 - An in-depth summary in two paragraphs, or three when the story genuinely has enough depth (multiple developments, historical background, several involved parties) to warrant the extra room — grounded ONLY in the source text you are given. Do not invent facts, quotes, or figures not present in the source text. Don't pad to three paragraphs artificially; only do it when there's real substance for a third.
@@ -86,7 +86,7 @@ Source article text (may be partial/truncated):
 ${groundingText}
 """
 
-Write the FIGHTER GROUP INTEL briefing article for this story, following the house style exactly.`;
+Write The Horizon Reports briefing article for this story, following the house style exactly.`;
 
   const response = await client.messages.parse({
     model: MODEL,

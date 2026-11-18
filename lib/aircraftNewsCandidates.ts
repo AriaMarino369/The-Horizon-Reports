@@ -43,7 +43,7 @@ export async function searchAircraftNewsCandidate(
   const windowEnd = new Date().toISOString().slice(0, 10);
   const windowStart = new Date(Date.now() - 180 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
 
-  const system = `You are a research assistant for "FIGHTER GROUP INTEL / NEWS UPDATE", an open-source military intelligence briefing. Use web search to find ONE current, reliable news story specifically about the "${aircraftName}" (manufacturer: ${manufacturer}) military aircraft type.
+  const system = `You are a research assistant for "The Horizon Reports", an open-source military intelligence briefing. Use web search to find ONE current, reliable news story specifically about the "${aircraftName}" (manufacturer: ${manufacturer}) military aircraft type.
 
 Only report a story that falls into one of these categories:
 - aircraft or systems improvements/upgrades for this type

@@ -51,7 +51,7 @@ export async function searchWebCandidates(
   const windowEnd = anchorDate.toISOString().slice(0, 10);
 
   const system = topic
-    ? `You are a research assistant for "FIGHTER GROUP INTEL / NEWS UPDATE", an open-source military intelligence briefing. An admin has requested a specific story: use web search to find recent, reliable news about "${topic}", scoped to ${focus}.
+    ? `You are a research assistant for "The Horizon Reports", an open-source military intelligence briefing. An admin has requested a specific story: use web search to find recent, reliable news about "${topic}", scoped to ${focus}.
 
 Rules:
 - Search specifically for the requested topic — do not substitute a different, unrelated story just because it's more recent or easier to find.
@@ -60,7 +60,7 @@ Rules:
 - Every result MUST be a real article you found via search — never invent a title, outlet, or URL. If search finds fewer than 6 solid results, return fewer; if it finds none at all matching the requested topic, return an empty list rather than substituting something else.
 - Prefer distinct stories over near-duplicates of the same event from the same outlet.
 - Report each article's own publish date (from its byline/dateline) as YYYY-MM-DD — never invent one; use null if you genuinely can't find it.`
-    : `You are a research assistant for "FIGHTER GROUP INTEL / NEWS UPDATE", an open-source military intelligence briefing. Use web search to find recent, reliable news about military/defence and military-technology developments for: ${focus}.
+    : `You are a research assistant for "The Horizon Reports", an open-source military intelligence briefing. Use web search to find recent, reliable news about military/defence and military-technology developments for: ${focus}.
 
 Focus on: new military developments and procurement, ongoing military tensions, fighter jets, transport aircraft, helicopters, air-to-air and air-to-ground weapons, surface-to-air missiles/systems, long-range weapons, rocket launchers, radar, stealth, unmanned aerial systems/vehicles, next-generation fighters and payloads, reconnaissance, space/orbital projects, indigenous defence programmes, and sea-to-air threats.
 

@@ -128,7 +128,7 @@ export async function generateAviationSafetyArticle(params: {
   const { region, country, existingTitles = [] } = params;
   const client = new Anthropic();
 
-  const system = `You are, at once, a military research analyst, an aviation safety analyst and accident investigator, and a safety advocate, writing for "FIGHTER GROUP INTEL / NEWS UPDATE"'s "Aviation Safety" section — content directed at aviation personnel (aircrew, maintainers, ATC, safety officers).
+  const system = `You are, at once, a military research analyst, an aviation safety analyst and accident investigator, and a safety advocate, writing for "The Horizon Reports"'s "Aviation Safety" section — content directed at aviation personnel (aircrew, maintainers, ATC, safety officers).
 
 Scope your work using ICAO Safety Management System (SMS) doctrine (Annex 19): the goal of every briefing is safety risk management and safety promotion — identifying hazards and contributing factors from a real event, and turning them into concrete, actionable lessons, never sensationalism or blame.
 

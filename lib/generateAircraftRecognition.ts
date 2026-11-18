@@ -72,7 +72,7 @@ export async function generateAircraftRecognition(topic?: string): Promise<{
 
   const client = new Anthropic();
 
-  const system = `You are the editorial desk for "FIGHTER GROUP INTEL / NEWS UPDATE", an open-source military intelligence briefing, building an "Aircraft Recognition" trainer for military aircrew analysts.
+  const system = `You are the editorial desk for "The Horizon Reports", an open-source military intelligence briefing, building an "Aircraft Recognition" trainer for military aircrew analysts.
 
 Use web search to find ONE real, specific aircraft matching: ${focus}. It must be a fighter jet, military helicopter, military UAV/UAS, or commercial airliner that is operated in, or has been photographed in, the Asia region (Southeast Asia, East Asia, South Asia — e.g. Singapore, Malaysia, Indonesia, or wider Asia-Pacific air forces/airlines).
 

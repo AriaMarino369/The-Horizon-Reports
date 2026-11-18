@@ -50,7 +50,7 @@ export async function regenerateArticleField(params: {
           ? "One analytical paragraph, written by a senior military analyst, on the operational/capability implications for South East Asian armed forces generally — doctrine, capability gaps, deterrence posture, procurement priorities, or interoperability — not narrowed to any single country's military unless the story is genuinely about that country specifically."
           : "One analytical paragraph on how this specific development concretely affects Singapore — SAF/RSAF capability planning, regional security posture, trade/sea-lane dependencies, diplomatic relationships, procurement decisions, or strategic calculus. If it genuinely has no meaningful Singapore-specific angle, say so plainly rather than forcing a stretch.";
 
-  const system = `You are the editorial desk for "FIGHTER GROUP INTEL / NEWS UPDATE", an open-source military intelligence briefing. An admin reviewing this article wants the ${fieldLabel} section rewritten to address a specific question or instruction of theirs.
+  const system = `You are the editorial desk for "The Horizon Reports", an open-source military intelligence briefing. An admin reviewing this article wants the ${fieldLabel} section rewritten to address a specific question or instruction of theirs.
 
 Article title: ${title}
 Region: ${REGION_LABELS[region]}${country ? ` (${country})` : ""}

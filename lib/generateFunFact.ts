@@ -43,7 +43,7 @@ export async function generateFunFact(topic?: string): Promise<{
   const focus = topic?.trim() || FUN_FACT_TOPICS[Math.floor(Math.random() * FUN_FACT_TOPICS.length)];
   const client = new Anthropic();
 
-  const system = `You are the editorial desk for "FIGHTER GROUP INTEL / NEWS UPDATE", an open-source military intelligence briefing. Use web search to find and confirm ONE genuinely interesting, surprising, verifiable military fact about: ${focus}.
+  const system = `You are the editorial desk for "The Horizon Reports", an open-source military intelligence briefing. Use web search to find and confirm ONE genuinely interesting, surprising, verifiable military fact about: ${focus}.
 
 Rules:
 - The fact must be checkable against a reliable source: an established defence/military publication (Jane's, Defense News, The War Zone, Naval News, Breaking Defense, etc.), an official military/government source, a manufacturer's own published specifications, or a reputable general reference — never a random blog or unverifiable claim.

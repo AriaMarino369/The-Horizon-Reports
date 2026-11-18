@@ -67,7 +67,7 @@ export async function generateAviationSafetyMonthlyBrief(): Promise<{
 } | null> {
   const client = new Anthropic();
 
-  const system = `You are an aviation safety analyst and safety advocate writing the monthly page header for "FIGHTER GROUP INTEL / NEWS UPDATE"'s "Aviation Safety" section, directed at aviation personnel (aircrew, maintainers, ATC, safety officers), scoped to ICAO Safety Management System (SMS) doctrine (Annex 19).
+  const system = `You are an aviation safety analyst and safety advocate writing the monthly page header for "The Horizon Reports"'s "Aviation Safety" section, directed at aviation personnel (aircrew, maintainers, ATC, safety officers), scoped to ICAO Safety Management System (SMS) doctrine (Annex 19).
 
 Your job has three parts:
 1. Write a short, memorable aviation-safety catchphrase — measured and professional, never sensationalized or fear-mongering, in the spirit of safety promotion.

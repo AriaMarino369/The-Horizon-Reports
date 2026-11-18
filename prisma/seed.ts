@@ -190,7 +190,7 @@ const ARTICLES: ArticleInput[] = [
       "Signals a broader regional trend toward blue-water power projection in SEA.",
     ],
     images: [
-      { url: PLACEHOLDER, caption: "FIGHTER GROUP INTEL briefing graphic.", sourceUrl: "https://www.channelnewsasia.com/asia/indonesia-aircraft-carrier-military-strategic-maritime-5942391" },
+      { url: PLACEHOLDER, caption: "The Horizon Reports briefing graphic.", sourceUrl: "https://www.channelnewsasia.com/asia/indonesia-aircraft-carrier-military-strategic-maritime-5942391" },
     ],
     sources: [
       { name: "Channel News Asia", url: "https://www.channelnewsasia.com/asia/indonesia-aircraft-carrier-military-strategic-maritime-5942391" },
@@ -220,7 +220,7 @@ const ARTICLES: ArticleInput[] = [
       "Iran can launch strikes from mobile, low-signature platforms without large naval forces.",
     ],
     images: [
-      { url: PLACEHOLDER, caption: "FIGHTER GROUP INTEL briefing graphic.", sourceUrl: "https://www.janes.com/osint-insights/defence-and-national-security-analysis/iran-conflict-2026-disruption-to-strait-of-hormuz-increases-energy-and-food-production-risks" },
+      { url: PLACEHOLDER, caption: "The Horizon Reports briefing graphic.", sourceUrl: "https://www.janes.com/osint-insights/defence-and-national-security-analysis/iran-conflict-2026-disruption-to-strait-of-hormuz-increases-energy-and-food-production-risks" },
     ],
     sources: [
       { name: "CNBC", url: "https://www.cnbc.com/2026/03/05/iran-shahed-136-drone-cost-air-defense-gulf-war-us-israel-gulf-scorpion-strike-centcom.html" },
@@ -251,7 +251,7 @@ const ARTICLES: ArticleInput[] = [
       "Iran retaliated with missile/drone strikes on US and allied Gulf bases, raising wider-war fears.",
     ],
     images: [
-      { url: PLACEHOLDER, caption: "FIGHTER GROUP INTEL briefing graphic.", sourceUrl: "https://www.centcom.mil/MEDIA/PRESS-RELEASES/Press-Release-View/Article/4418396/us-forces-launch-operation-epic-fury/" },
+      { url: PLACEHOLDER, caption: "The Horizon Reports briefing graphic.", sourceUrl: "https://www.centcom.mil/MEDIA/PRESS-RELEASES/Press-Release-View/Article/4418396/us-forces-launch-operation-epic-fury/" },
     ],
     sources: [
       { name: "CENTCOM", url: "https://www.centcom.mil/MEDIA/PRESS-RELEASES/Press-Release-View/Article/4418396/us-forces-launch-operation-epic-fury/" },
