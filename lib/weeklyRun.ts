@@ -10,7 +10,8 @@ import { selectFreshCandidate } from "@/lib/dedupeCandidate";
 import { generateArticleDraft } from "@/lib/generateArticle";
 import { mondayOf } from "@/lib/weeks";
 import { publishArticle } from "@/lib/publish";
-import { CORE_REGIONS, OPTIONAL_REGIONS } from "@/lib/sources";
+import { CORE_REGIONS, OPTIONAL_REGIONS, REGION_LABELS } from "@/lib/sources";
+import { notifyWeeklyPublished } from "@/lib/telegramNotify";
 
 export class NoCandidatesError extends Error {
   constructor(region: string, topic?: string) {
@@ -162,9 +163,26 @@ export async function runWeeklyGeneration(options: { autoPublish?: boolean } = {
   }
 
   if (autoPublish) {
+    const publishedIds: string[] = [];
     for (const c of created) {
       if (!c.articleId) continue;
       await publishArticle(c.articleId);
+      publishedIds.push(c.articleId);
+    }
+
+    if (publishedIds.length > 0) {
+      const publishedArticles = await db.article.findMany({
+        where: { id: { in: publishedIds } },
+        select: { title: true, slug: true, region: true, country: true },
+      });
+      await notifyWeeklyPublished(
+        publishedArticles.map((a) => ({
+          title: a.title,
+          slug: a.slug,
+          regionLabel: REGION_LABELS[a.region],
+          country: a.country,
+        }))
+      );
     }
   }
 
