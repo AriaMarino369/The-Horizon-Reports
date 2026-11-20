@@ -240,6 +240,7 @@ model ExpertQuestion {
   answerFormat  ExpertAnswerFormat?
   sources       String? // JSON array of {name, url}, or null if no citable source was used
   note          String? // short reason when status is FAILED
+  answeredBy    String? // "instant" (paid API, synchronous) or "routine" (free Claude Code Remote) — null while PENDING
   requestedAt   DateTime                @default(now())
   fulfilledAt   DateTime?
 

@@ -1,0 +1,1 @@
+ALTER TABLE "ExpertQuestion" ADD COLUMN IF NOT EXISTS "answeredBy" TEXT;
