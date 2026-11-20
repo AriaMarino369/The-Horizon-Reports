@@ -6,6 +6,7 @@ import {
   requestFreeAviationSafetyAction,
 } from "@/app/actions/admin";
 import { AVIATION_SAFETY_REGION_LABELS, AVIATION_SAFETY_REGIONS } from "@/lib/aviationSafety";
+import { COUNTRY_NAMES } from "@/lib/countryNames";
 
 export function AviationSafetyForm() {
   const [region, setRegion] = useState("ASIA");
@@ -43,13 +44,14 @@ export function AviationSafetyForm() {
       {region === "CUSTOM" && (
         <label className="flex flex-col gap-2">
           <span className={labelClass}>Country</span>
-          <input
-            type="text"
-            value={country}
-            onChange={(e) => setCountry(e.target.value)}
-            placeholder="e.g. Vietnam, Philippines, Taiwan…"
-            className={fieldClass}
-          />
+          <select value={country} onChange={(e) => setCountry(e.target.value)} className={fieldClass}>
+            <option value="">— Select a country —</option>
+            {COUNTRY_NAMES.map((name) => (
+              <option key={name} value={name}>
+                {name}
+              </option>
+            ))}
+          </select>
         </label>
       )}
 

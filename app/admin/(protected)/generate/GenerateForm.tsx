@@ -3,6 +3,7 @@
 import { useActionState, useState } from "react";
 import { generateAction, requestFreeGenerationAction } from "@/app/actions/admin";
 import { REGION_LABELS } from "@/lib/sources";
+import { COUNTRY_NAMES } from "@/lib/countryNames";
 import type { Region } from "@/generated/prisma/client";
 
 const ALL_REGIONS: Region[] = ["SINGAPORE", "SEA", "GLOBAL", "USA", "MALAYSIA", "INDONESIA", "CUSTOM"];
@@ -44,13 +45,18 @@ export function GenerateForm({
 
       <label className="flex flex-col gap-2">
         <span className={labelClass}>Country (optional filter, required for Custom)</span>
-        <input
-          type="text"
+        <select
           value={country}
           onChange={(e) => setCountry(e.target.value)}
-          placeholder="e.g. Vietnam, Philippines, Taiwan…"
           className={fieldClass}
-        />
+        >
+          <option value="">— No country filter —</option>
+          {COUNTRY_NAMES.map((name) => (
+            <option key={name} value={name}>
+              {name}
+            </option>
+          ))}
+        </select>
       </label>
 
       <label className="flex flex-col gap-2">
