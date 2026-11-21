@@ -291,6 +291,86 @@ export async function replaceArticleImageAction(
 }
 
 /**
+ * Last-resort manual fix for a Regional Knowledge aircraft photo that's
+ * dead/unreachable/hotlink-blocked at its source. Mirrors
+ * replaceArticleImageAction's upload-or-paste-URL pattern exactly; an
+ * uploaded file is stored as a same-origin data: URI (never proxied,
+ * never subject to hotlink issues at all).
+ */
+export async function replaceAircraftImageAction(
+  _state: ImageActionState,
+  formData: FormData
+): Promise<ImageActionState> {
+  await requireAdmin();
+  const aircraftId = String(formData.get("aircraftId"));
+  const pastedUrl = String(formData.get("imageUrl") ?? "").trim();
+  const file = formData.get("image");
+
+  let url: string;
+  if (file instanceof File && file.size > 0) {
+    if (file.size > MAX_UPLOAD_BYTES) {
+      return { error: `Image is too large — max ${Math.round(MAX_UPLOAD_BYTES / 1024 / 1024)}MB.` };
+    }
+    if (!file.type.startsWith("image/")) {
+      return { error: "That file isn't an image." };
+    }
+    const buf = Buffer.from(await file.arrayBuffer());
+    url = `data:${file.type};base64,${buf.toString("base64")}`;
+  } else if (pastedUrl) {
+    const ok = await verifyImageUrl(pastedUrl);
+    if (!ok) {
+      return { error: "That image URL didn't resolve to a real, usable image — try uploading the file instead." };
+    }
+    url = pastedUrl;
+  } else {
+    return { error: "Choose a file to upload, or paste an image URL." };
+  }
+
+  await db.militaryAircraft.update({ where: { id: aircraftId }, data: { imageUrl: url } });
+  revalidatePath("/regional-knowledge/aircraft");
+  revalidatePath("/regional-knowledge");
+  revalidatePath("/admin/regional-knowledge/images");
+  return { ok: true };
+}
+
+/** Same as replaceAircraftImageAction, for a Weapon's photo. */
+export async function replaceWeaponImageAction(
+  _state: ImageActionState,
+  formData: FormData
+): Promise<ImageActionState> {
+  await requireAdmin();
+  const weaponId = String(formData.get("weaponId"));
+  const pastedUrl = String(formData.get("imageUrl") ?? "").trim();
+  const file = formData.get("image");
+
+  let url: string;
+  if (file instanceof File && file.size > 0) {
+    if (file.size > MAX_UPLOAD_BYTES) {
+      return { error: `Image is too large — max ${Math.round(MAX_UPLOAD_BYTES / 1024 / 1024)}MB.` };
+    }
+    if (!file.type.startsWith("image/")) {
+      return { error: "That file isn't an image." };
+    }
+    const buf = Buffer.from(await file.arrayBuffer());
+    url = `data:${file.type};base64,${buf.toString("base64")}`;
+  } else if (pastedUrl) {
+    const ok = await verifyImageUrl(pastedUrl);
+    if (!ok) {
+      return { error: "That image URL didn't resolve to a real, usable image — try uploading the file instead." };
+    }
+    url = pastedUrl;
+  } else {
+    return { error: "Choose a file to upload, or paste an image URL." };
+  }
+
+  await db.weapon.update({ where: { id: weaponId }, data: { imageUrl: url } });
+  revalidatePath("/regional-knowledge/weapon");
+  revalidatePath("/regional-knowledge");
+  revalidatePath("/admin/regional-knowledge/images");
+  return { ok: true };
+}
+
+/**
  * Lets an admin pose a question or instruction ("did any other country
  * respond?", "focus more on cost") and have just the Did You Know or
  * Perspective section rewritten to address it — rather than only being able

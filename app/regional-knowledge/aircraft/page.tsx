@@ -3,6 +3,7 @@ import { getPublishedAircraft } from "@/lib/queries";
 import { getSession } from "@/lib/session";
 import { SiteHeader } from "@/app/components/SiteHeader";
 import { AIRCRAFT_ROLE_LABELS } from "@/lib/regionalKnowledge";
+import { proxiedImageUrl } from "@/lib/imageProxy";
 import type { AircraftRole } from "@/generated/prisma/client";
 
 export default async function AircraftIndexPage() {
@@ -53,7 +54,7 @@ export default async function AircraftIndexPage() {
                       {a.imageUrl && (
                         <div className="h-16 w-24 shrink-0 overflow-hidden rounded border border-border bg-panel-2">
                           {/* eslint-disable-next-line @next/next/no-img-element -- external, arbitrary-host thumbnail */}
-                          <img src={a.imageUrl} alt="" className="h-full w-full object-cover" />
+                          <img src={proxiedImageUrl(a.imageUrl)} alt="" className="h-full w-full object-cover" />
                         </div>
                       )}
                       <div className="min-w-0">

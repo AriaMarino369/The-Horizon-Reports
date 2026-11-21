@@ -3,6 +3,7 @@ import { getPublishedWeapons } from "@/lib/queries";
 import { getSession } from "@/lib/session";
 import { SiteHeader } from "@/app/components/SiteHeader";
 import { WEAPON_CATEGORY_LABELS } from "@/lib/regionalKnowledge";
+import { proxiedImageUrl } from "@/lib/imageProxy";
 import type { WeaponCategory } from "@/generated/prisma/client";
 
 export default async function WeaponIndexPage() {
@@ -53,7 +54,7 @@ export default async function WeaponIndexPage() {
                       {w.imageUrl && (
                         <div className="h-16 w-24 shrink-0 overflow-hidden rounded border border-border bg-panel-2">
                           {/* eslint-disable-next-line @next/next/no-img-element -- external, arbitrary-host thumbnail */}
-                          <img src={w.imageUrl} alt="" className="h-full w-full object-cover" />
+                          <img src={proxiedImageUrl(w.imageUrl)} alt="" className="h-full w-full object-cover" />
                         </div>
                       )}
                       <div className="min-w-0">

@@ -6,6 +6,7 @@ import { SiteHeader } from "@/app/components/SiteHeader";
 import { SourcesList } from "@/app/components/SourcesList";
 import { AircraftSilhouette } from "@/app/components/AircraftSilhouette";
 import { AIRBASE_TYPE_LABELS, AIRBASE_UNIT_CATEGORY_LABELS, resolveAircraftView } from "@/lib/regionalKnowledge";
+import { proxiedImageUrl } from "@/lib/imageProxy";
 import type { ArticleSource } from "@/lib/types";
 
 function Stat({ label, value }: { label: string; value: string | number | null | undefined }) {
@@ -109,7 +110,7 @@ export default async function AirbasePage({ params }: { params: Promise<{ slug: 
                       {view.imageUrl ? (
                         <div className="aspect-video w-full overflow-hidden bg-panel-2">
                           {/* eslint-disable-next-line @next/next/no-img-element -- external, arbitrary-host photo */}
-                          <img src={view.imageUrl} alt={a.name} className="h-full w-full object-cover" />
+                          <img src={proxiedImageUrl(view.imageUrl)} alt={a.name} className="h-full w-full object-cover" />
                         </div>
                       ) : (
                         <AircraftSilhouette role={a.role} className="aspect-video w-full" />

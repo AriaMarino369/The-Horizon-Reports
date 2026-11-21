@@ -13,12 +13,20 @@ function placeholderRedirect(): Response {
 
 /** True once some PUBLISHED or DRAFT content we generated actually cites this exact URL as one of its images — never proxy an arbitrary caller-supplied URL. */
 async function isKnownImageUrl(url: string): Promise<boolean> {
-  const [article, aviationSafety, aircraft] = await Promise.all([
+  const [article, aviationSafety, aircraftRecognition, militaryAircraft, weapon] = await Promise.all([
     db.article.findFirst({ where: { images: { contains: url } }, select: { id: true } }),
     db.aviationSafetyArticle.findFirst({ where: { images: { contains: url } }, select: { id: true } }),
     db.aircraftRecognition.findFirst({ where: { imageUrl: url }, select: { id: true } }),
+    // Regional Knowledge: the generic imageUrl column, or a per-operator
+    // override stored inside the operatorsInRegion JSON blob (see
+    // lib/regionalKnowledge.ts's AircraftOperator.imageUrl).
+    db.militaryAircraft.findFirst({
+      where: { OR: [{ imageUrl: url }, { operatorsInRegion: { contains: url } }] },
+      select: { id: true },
+    }),
+    db.weapon.findFirst({ where: { imageUrl: url }, select: { id: true } }),
   ]);
-  return Boolean(article || aviationSafety || aircraft);
+  return Boolean(article || aviationSafety || aircraftRecognition || militaryAircraft || weapon);
 }
 
 export async function GET(request: NextRequest) {

@@ -68,12 +68,20 @@ export default async function RegionalKnowledgeAdminPage() {
             never classified sources. Review and publish here before they appear on the public map.
           </p>
         </div>
-        <Link
-          href="/admin/regional-knowledge/new"
-          className="stencil rounded bg-accent px-4 py-2 text-xs font-semibold tracking-widest text-background hover:bg-accent-strong transition-colors"
-        >
-          + Add Airbase
-        </Link>
+        <div className="flex gap-2">
+          <Link
+            href="/admin/regional-knowledge/images"
+            className="stencil rounded border border-gold px-4 py-2 text-xs font-semibold tracking-widest text-gold hover:bg-gold hover:text-background transition-colors"
+          >
+            Fix Images
+          </Link>
+          <Link
+            href="/admin/regional-knowledge/new"
+            className="stencil rounded bg-accent px-4 py-2 text-xs font-semibold tracking-widest text-background hover:bg-accent-strong transition-colors"
+          >
+            + Add Airbase
+          </Link>
+        </div>
       </div>
 
       {drafts.length > 0 && (

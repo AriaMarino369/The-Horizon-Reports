@@ -5,6 +5,7 @@ import { getSession } from "@/lib/session";
 import { SiteHeader } from "@/app/components/SiteHeader";
 import { SourcesList } from "@/app/components/SourcesList";
 import { WEAPON_CATEGORY_LABELS } from "@/lib/regionalKnowledge";
+import { proxiedImageUrl } from "@/lib/imageProxy";
 import type { ArticleSource } from "@/lib/types";
 
 type Operator = { country: string; sources?: ArticleSource[] };
@@ -45,7 +46,7 @@ export default async function WeaponPage({ params }: { params: Promise<{ slug: s
         {weapon.imageUrl && (
           <div className="overflow-hidden rounded border border-border bg-panel-2">
             {/* eslint-disable-next-line @next/next/no-img-element -- external, arbitrary-host photo */}
-            <img src={weapon.imageUrl} alt={weapon.name} className="aspect-video w-full object-cover" />
+            <img src={proxiedImageUrl(weapon.imageUrl)} alt={weapon.name} className="aspect-video w-full object-cover" />
           </div>
         )}
 

@@ -12,6 +12,7 @@ import {
   parseOperators,
   resolveAircraftView,
 } from "@/lib/regionalKnowledge";
+import { proxiedImageUrl } from "@/lib/imageProxy";
 import type { ArticleSource } from "@/lib/types";
 
 function Stat({ label, value }: { label: string; value: string | number | null | undefined }) {
@@ -86,7 +87,7 @@ export default async function AircraftPage({
           <div className="overflow-hidden rounded border border-border bg-panel-2">
             {/* eslint-disable-next-line @next/next/no-img-element -- external, arbitrary-host photo */}
             <img
-              src={view.imageUrl}
+              src={proxiedImageUrl(view.imageUrl)}
               alt={`${aircraft.name}${viewingOperator ? ` — ${viewingOperator.country}` : ""}`}
               className="aspect-video w-full object-cover"
             />
@@ -350,7 +351,7 @@ export default async function AircraftPage({
                     {a.imageUrl ? (
                       <div className="aspect-video w-full overflow-hidden bg-panel-2">
                         {/* eslint-disable-next-line @next/next/no-img-element -- external, arbitrary-host thumbnail */}
-                        <img src={a.imageUrl} alt={a.name} className="h-full w-full object-cover" />
+                        <img src={proxiedImageUrl(a.imageUrl)} alt={a.name} className="h-full w-full object-cover" />
                       </div>
                     ) : (
                       <AircraftSilhouette role={a.role} className="aspect-video w-full" />
