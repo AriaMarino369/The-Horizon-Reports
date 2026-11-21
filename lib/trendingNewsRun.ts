@@ -4,12 +4,12 @@ import { searchTrendingIncidents } from "@/lib/trendingNewsCandidates";
 import { lookupCountry } from "@/lib/worldCountries";
 
 // Keeps the map current with the 6-hour refresh cadence: a pin reflects
-// something that happened within roughly the last run cycle, with a little
+// something that happened within roughly the last run cycle or two, with
 // headroom for a run landing slightly late. Anything older is archived every
 // run even if no replacement was found for that country — so a conflict
-// that's gone quiet drops off the map within about 7 hours, rather than
+// that's gone quiet drops off the map within about 14 hours, rather than
 // cluttering it with stale pins.
-const FRESHNESS_WINDOW_MS = 7 * 60 * 60 * 1000; // 7 hours
+const FRESHNESS_WINDOW_MS = 14 * 60 * 60 * 1000; // 14 hours
 
 export async function runTrendingNewsRefresh() {
   const now = new Date();

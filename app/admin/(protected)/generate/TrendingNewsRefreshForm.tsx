@@ -10,7 +10,7 @@ export function TrendingNewsRefreshForm() {
     <div className="flex flex-col gap-2 rounded border border-gold/40 bg-panel p-4">
       <p className="stencil text-xs tracking-widest text-gold">Trending News — Global Conflict Map</p>
       <p className="text-xs text-muted">
-        Normally runs automatically every 6 hours (09:00, 15:00, 21:00, and 03:00 SGT). Use this to pull in
+        Normally runs automatically every 6 hours (06:00, 12:00, 18:00, and 00:00 SGT). Use this to pull in
         current incidents right now instead of waiting for the next scheduled run — results
         appear on the map at /news-feeds.
       </p>

@@ -15,19 +15,19 @@
     },
     {
       "path": "/api/cron/trending-news-refresh",
-      "schedule": "0 1 * * *"
+      "schedule": "0 4 * * *"
     },
     {
       "path": "/api/cron/trending-news-refresh",
-      "schedule": "0 7 * * *"
+      "schedule": "0 10 * * *"
     },
     {
       "path": "/api/cron/trending-news-refresh",
-      "schedule": "0 13 * * *"
+      "schedule": "0 16 * * *"
     },
     {
       "path": "/api/cron/trending-news-refresh",
-      "schedule": "0 19 * * *"
+      "schedule": "0 22 * * *"
     }
   ]
 }
