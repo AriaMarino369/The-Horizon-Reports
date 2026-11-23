@@ -10,10 +10,11 @@ const LINK_STYLE: Record<string, string> = {
   accent: "border-accent/60 text-accent hover:bg-accent hover:text-background",
   gold: "border-gold/60 text-gold hover:bg-gold hover:text-background",
   "accent-strong": "border-accent text-accent-strong hover:bg-accent hover:text-background",
+  foreground: "border-foreground/60 text-foreground hover:bg-foreground hover:text-background",
 };
 
 const NAV_ITEMS: { href: string; label: string; color: keyof typeof LINK_STYLE }[] = [
-  { href: "/", label: "Weekly News", color: "accent-strong" },
+  { href: "/", label: "Weekly News", color: "foreground" },
   { href: "/aviation-safety", label: "Aviation Safety", color: "danger" },
   { href: "/news-feeds", label: "Trending News", color: "accent" },
   { href: "/regional-knowledge", label: "Regional Knowledge", color: "gold" },
