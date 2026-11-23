@@ -56,6 +56,9 @@ export default async function GeneratePage({
     orderBy: { createdAt: "desc" },
     take: 20,
   });
+  const pendingTrendingNewsRefresh = await db.trendingNewsRefreshRequest.findFirst({
+    where: { status: "PENDING" },
+  });
 
   return (
     <div className="flex flex-col gap-4">
@@ -436,7 +439,7 @@ export default async function GeneratePage({
 
       <hr className="my-2 border-border" />
 
-      <TrendingNewsRefreshForm />
+      <TrendingNewsRefreshForm hasPendingFreeRequest={!!pendingTrendingNewsRefresh} />
     </div>
   );
 }

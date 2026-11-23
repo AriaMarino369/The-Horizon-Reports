@@ -604,3 +604,19 @@ model TrendingIncident {
   @@index([status])
   @@index([country])
 }
+
+// The "free workflow" equivalent of the paid "Refresh Now" button on the
+// Trending News Global Conflict Map: an admin's on-demand request for an
+// immediate worldwide refresh, queued instead of calling the Anthropic API.
+// Picked up by the hourly free-generation Routine, mirroring
+// AviationSafetyRequest/GenerationRequest. Unscoped (no region/topic) since
+// a refresh is always a single global sweep.
+model TrendingNewsRefreshRequest {
+  id          String                  @id @default(cuid())
+  status      GenerationRequestStatus @default(PENDING)
+  note        String?
+  requestedAt DateTime                @default(now())
+  fulfilledAt DateTime?
+
+  @@index([status])
+}

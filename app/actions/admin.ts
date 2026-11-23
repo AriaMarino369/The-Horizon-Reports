@@ -1062,3 +1062,30 @@ export async function runTrendingNewsRefreshAction(
     message: `Found ${result.candidatesFound} candidate incident(s) — ${result.created} new pin(s) published, ${result.skippedUnresolvedCountry} skipped (unresolved country), ${result.expired} expired. ${result.activeCount} active on the map now.`,
   };
 }
+
+/**
+ * The free-workflow equivalent of runTrendingNewsRefreshAction above: queues
+ * a request instead of calling the Anthropic API directly. Picked up by the
+ * hourly free-generation Routine, which runs one worldwide sweep covering
+ * every pending request at once (mirroring requestFreeAviationSafetyAction).
+ */
+export async function requestFreeTrendingNewsRefreshAction(
+  _state: AdminActionState,
+  _formData: FormData
+): Promise<AdminActionState> {
+  await requireAdmin();
+  const pending = await db.trendingNewsRefreshRequest.findFirst({ where: { status: "PENDING" } });
+  if (pending) {
+    return { error: "A free refresh is already queued — it'll run within the hour." };
+  }
+  await db.trendingNewsRefreshRequest.create({ data: {} });
+  revalidatePath("/admin/generate");
+  return { ok: true };
+}
+
+export async function cancelTrendingNewsRefreshRequestAction(formData: FormData) {
+  await requireAdmin();
+  const id = String(formData.get("id"));
+  await db.trendingNewsRefreshRequest.delete({ where: { id } });
+  revalidatePath("/admin/generate");
+}
