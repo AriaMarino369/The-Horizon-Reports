@@ -11,9 +11,17 @@ export async function archivePriorWeeks(currentWeekOf: Date) {
 
 /**
  * Publishes an article, archiving both prior weeks' published articles and
- * any other already-published article in the same region/week (so
+ * any other already-published article in the same region/country/week (so
  * publishing a freshly generated draft doubles as "swap the pre-generated
  * news" for that slot, even after the original was already published).
+ *
+ * `country` is part of the swap key, not just `region`: for the six fixed
+ * regions it's always null, so this is a no-op change there. For `CUSTOM`
+ * region, though, several distinct countries' articles are meant to coexist
+ * in the same week — matching on `region` alone treated every CUSTOM article
+ * as one shared slot, so publishing e.g. an Israel piece would silently
+ * archive an already-published, completely unrelated Iran piece from the
+ * same week.
  */
 export async function publishArticle(articleId: string) {
   const article = await db.article.findUniqueOrThrow({ where: { id: articleId } });
@@ -23,6 +31,7 @@ export async function publishArticle(articleId: string) {
       status: "PUBLISHED",
       weekOf: article.weekOf,
       region: article.region,
+      country: article.country,
       id: { not: articleId },
     },
     data: { status: "ARCHIVED" },
