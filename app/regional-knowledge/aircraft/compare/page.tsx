@@ -94,14 +94,21 @@ function RadarChart({
       ))}
       {axes.map((label, i) => {
         const angle = angleFor(i);
-        const x = center + Math.cos(angle) * (radius + 18);
+        const cosAngle = Math.cos(angle);
+        const x = center + cosAngle * (radius + 18);
         const y = center + Math.sin(angle) * (radius + 18);
+        // Anchor left/right-pointing labels so their text grows inward
+        // (toward center) instead of outward past the SVG's edge — a
+        // center ("middle") anchor on a long label like "Operational
+        // Ceiling" or "Turn Radius Performance" placed near the left or
+        // right edge runs half the text straight off the viewBox.
+        const textAnchor = cosAngle > 0.3 ? "end" : cosAngle < -0.3 ? "start" : "middle";
         return (
           <text
             key={label}
             x={x}
             y={y}
-            textAnchor="middle"
+            textAnchor={textAnchor}
             dominantBaseline="middle"
             className="fill-muted"
             fontSize={9}

@@ -169,13 +169,18 @@ export function AviationSafetyTrendChart({ data }: { data: BriefPoint[] }) {
                 </g>
               ))}
 
-              {/* x-axis labels */}
+              {/* x-axis labels — anchor the first/last labels inward
+                  (start/end) instead of centering them on the point, so
+                  "Jul 26"/"Nov 26" grow toward the middle of the chart
+                  instead of running past the SVG's left/right edge. */}
               {data.map((d, i) => (
                 <text
                   key={i}
                   x={plot.x(i)}
                   y={HEIGHT - PAD_BOTTOM + 14}
-                  textAnchor="middle"
+                  textAnchor={
+                    data.length === 1 ? "middle" : i === 0 ? "start" : i === data.length - 1 ? "end" : "middle"
+                  }
                   className="fill-muted"
                   fontSize="8"
                 >
