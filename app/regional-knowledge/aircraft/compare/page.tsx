@@ -42,15 +42,20 @@ const RADAR_METRICS: Metric[] = [
   { label: "Turn Radius Performance", unit: "°/s", get: (a) => a.turnRateDegSec },
 ];
 
-// Axis names live in a plain list beside the chart instead of wrapping
-// around it — six multi-word labels crammed against the plotted polygons
-// made the chart itself unreadable, however carefully the text was
-// anchored. The chart only needs a short numbered marker per vertex; the
-// list is what actually carries the label text.
+// Labels sit at each corner, outside the hexagon. The canvas is wider than
+// it is tall specifically to give the two side corners (which carry the
+// longest labels, e.g. "Turn Radius Performance") room to grow outward,
+// away from center — a centered or inward-growing anchor there either
+// clips past the SVG's edge or runs the text straight across the plotted
+// polygons. Top/bottom labels stay centered since their text runs
+// tangential to the hexagon there, not radially into it.
 function RadarChart({ axes, seriesA, seriesB }: { axes: string[]; seriesA: number[]; seriesB: number[] }) {
-  const size = 240;
-  const center = size / 2;
-  const radius = size / 2 - 30;
+  const width = 480;
+  const height = 260;
+  const centerX = width / 2;
+  const centerY = height / 2;
+  const radius = 85;
+  const labelGap = 16;
   const n = axes.length;
   if (n < 3) return null;
 
@@ -62,8 +67,8 @@ function RadarChart({ axes, seriesA, seriesB }: { axes: string[]; seriesA: numbe
       .map((v, i) => {
         const normalized = Math.max(0, Math.min(1, v / maxPerAxis[i]));
         const angle = angleFor(i);
-        const x = center + Math.cos(angle) * radius * normalized;
-        const y = center + Math.sin(angle) * radius * normalized;
+        const x = centerX + Math.cos(angle) * radius * normalized;
+        const y = centerY + Math.sin(angle) * radius * normalized;
         return `${x},${y}`;
       })
       .join(" ");
@@ -71,54 +76,51 @@ function RadarChart({ axes, seriesA, seriesB }: { axes: string[]; seriesA: numbe
   const gridRings = [0.25, 0.5, 0.75, 1];
 
   return (
-    <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-start sm:justify-center">
-      <svg viewBox={`0 0 ${size} ${size}`} className="w-full max-w-[220px] shrink-0">
-        {gridRings.map((r) => (
-          <polygon
-            key={r}
-            points={axes
-              .map((_, i) => {
-                const angle = angleFor(i);
-                return `${center + Math.cos(angle) * radius * r},${center + Math.sin(angle) * radius * r}`;
-              })
-              .join(" ")}
-            fill="none"
-            stroke="currentColor"
-            className="text-border"
-            strokeWidth={1}
-          />
-        ))}
-        <polygon points={pointFor(seriesA)} fill="var(--color-accent)" fillOpacity={0.15} stroke="var(--color-accent)" strokeWidth={2} />
-        <polygon points={pointFor(seriesB)} fill="var(--color-gold)" fillOpacity={0.15} stroke="var(--color-gold)" strokeWidth={2} />
-        {axes.map((label, i) => {
-          const angle = angleFor(i);
-          const x = center + Math.cos(angle) * (radius + 14);
-          const y = center + Math.sin(angle) * (radius + 14);
-          return (
-            <text
-              key={label}
-              x={x}
-              y={y}
-              textAnchor="middle"
-              dominantBaseline="middle"
-              className="fill-foreground"
-              fontSize={10}
-              fontFamily="monospace"
-            >
-              {i + 1}
-            </text>
-          );
-        })}
-      </svg>
-      <ol className="flex flex-col gap-1 font-mono text-[10px] text-muted sm:w-44 sm:shrink-0">
-        {axes.map((label, i) => (
-          <li key={label} className="flex gap-1.5">
-            <span className="text-foreground">{i + 1}.</span>
+    <svg viewBox={`0 0 ${width} ${height}`} className="mx-auto w-full max-w-md">
+      {gridRings.map((r) => (
+        <polygon
+          key={r}
+          points={axes
+            .map((_, i) => {
+              const angle = angleFor(i);
+              return `${centerX + Math.cos(angle) * radius * r},${centerY + Math.sin(angle) * radius * r}`;
+            })
+            .join(" ")}
+          fill="none"
+          stroke="currentColor"
+          className="text-border"
+          strokeWidth={1}
+        />
+      ))}
+      <polygon points={pointFor(seriesA)} fill="var(--color-accent)" fillOpacity={0.15} stroke="var(--color-accent)" strokeWidth={2} />
+      <polygon points={pointFor(seriesB)} fill="var(--color-gold)" fillOpacity={0.15} stroke="var(--color-gold)" strokeWidth={2} />
+      {axes.map((label, i) => {
+        const angle = angleFor(i);
+        const cosAngle = Math.cos(angle);
+        const x = centerX + cosAngle * (radius + labelGap);
+        const y = centerY + Math.sin(angle) * (radius + labelGap);
+        // Grow outward, away from center, on the two side corners — the
+        // opposite of the inward anchor used elsewhere for edge-clipping
+        // fixes, because here the priority is staying clear of the
+        // hexagon, not staying clear of the SVG edge (the wider canvas
+        // above handles that instead).
+        const textAnchor = cosAngle > 0.3 ? "start" : cosAngle < -0.3 ? "end" : "middle";
+        return (
+          <text
+            key={label}
+            x={x}
+            y={y}
+            textAnchor={textAnchor}
+            dominantBaseline="middle"
+            className="fill-muted"
+            fontSize={9}
+            fontFamily="monospace"
+          >
             {label}
-          </li>
-        ))}
-      </ol>
-    </div>
+          </text>
+        );
+      })}
+    </svg>
   );
 }
 
