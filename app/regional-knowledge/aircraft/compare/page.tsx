@@ -42,20 +42,15 @@ const RADAR_METRICS: Metric[] = [
   { label: "Turn Radius Performance", unit: "°/s", get: (a) => a.turnRateDegSec },
 ];
 
-function RadarChart({
-  axes,
-  seriesA,
-  seriesB,
-  nameA,
-}: {
-  axes: string[];
-  seriesA: number[];
-  seriesB: number[];
-  nameA: string;
-}) {
-  const size = 280;
+// Axis names live in a plain list beside the chart instead of wrapping
+// around it — six multi-word labels crammed against the plotted polygons
+// made the chart itself unreadable, however carefully the text was
+// anchored. The chart only needs a short numbered marker per vertex; the
+// list is what actually carries the label text.
+function RadarChart({ axes, seriesA, seriesB }: { axes: string[]; seriesA: number[]; seriesB: number[] }) {
+  const size = 240;
   const center = size / 2;
-  const radius = size / 2 - 40;
+  const radius = size / 2 - 30;
   const n = axes.length;
   if (n < 3) return null;
 
@@ -76,54 +71,54 @@ function RadarChart({
   const gridRings = [0.25, 0.5, 0.75, 1];
 
   return (
-    <svg viewBox={`0 0 ${size} ${size}`} className="mx-auto w-full max-w-xs">
-      {gridRings.map((r) => (
-        <polygon
-          key={r}
-          points={axes
-            .map((_, i) => {
-              const angle = angleFor(i);
-              return `${center + Math.cos(angle) * radius * r},${center + Math.sin(angle) * radius * r}`;
-            })
-            .join(" ")}
-          fill="none"
-          stroke="currentColor"
-          className="text-border"
-          strokeWidth={1}
-        />
-      ))}
-      {axes.map((label, i) => {
-        const angle = angleFor(i);
-        const cosAngle = Math.cos(angle);
-        const x = center + cosAngle * (radius + 18);
-        const y = center + Math.sin(angle) * (radius + 18);
-        // Anchor left/right-pointing labels so their text grows inward
-        // (toward center) instead of outward past the SVG's edge — a
-        // center ("middle") anchor on a long label like "Operational
-        // Ceiling" or "Turn Radius Performance" placed near the left or
-        // right edge runs half the text straight off the viewBox.
-        const textAnchor = cosAngle > 0.3 ? "end" : cosAngle < -0.3 ? "start" : "middle";
-        return (
-          <text
-            key={label}
-            x={x}
-            y={y}
-            textAnchor={textAnchor}
-            dominantBaseline="middle"
-            className="fill-muted"
-            fontSize={9}
-            fontFamily="monospace"
-          >
+    <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-start sm:justify-center">
+      <svg viewBox={`0 0 ${size} ${size}`} className="w-full max-w-[220px] shrink-0">
+        {gridRings.map((r) => (
+          <polygon
+            key={r}
+            points={axes
+              .map((_, i) => {
+                const angle = angleFor(i);
+                return `${center + Math.cos(angle) * radius * r},${center + Math.sin(angle) * radius * r}`;
+              })
+              .join(" ")}
+            fill="none"
+            stroke="currentColor"
+            className="text-border"
+            strokeWidth={1}
+          />
+        ))}
+        <polygon points={pointFor(seriesA)} fill="var(--color-accent)" fillOpacity={0.15} stroke="var(--color-accent)" strokeWidth={2} />
+        <polygon points={pointFor(seriesB)} fill="var(--color-gold)" fillOpacity={0.15} stroke="var(--color-gold)" strokeWidth={2} />
+        {axes.map((label, i) => {
+          const angle = angleFor(i);
+          const x = center + Math.cos(angle) * (radius + 14);
+          const y = center + Math.sin(angle) * (radius + 14);
+          return (
+            <text
+              key={label}
+              x={x}
+              y={y}
+              textAnchor="middle"
+              dominantBaseline="middle"
+              className="fill-foreground"
+              fontSize={10}
+              fontFamily="monospace"
+            >
+              {i + 1}
+            </text>
+          );
+        })}
+      </svg>
+      <ol className="flex flex-col gap-1 font-mono text-[10px] text-muted sm:w-44 sm:shrink-0">
+        {axes.map((label, i) => (
+          <li key={label} className="flex gap-1.5">
+            <span className="text-foreground">{i + 1}.</span>
             {label}
-          </text>
-        );
-      })}
-      <polygon points={pointFor(seriesA)} fill="var(--color-accent)" fillOpacity={0.15} stroke="var(--color-accent)" strokeWidth={2} />
-      <polygon points={pointFor(seriesB)} fill="var(--color-gold)" fillOpacity={0.15} stroke="var(--color-gold)" strokeWidth={2} />
-      <text x={center} y={size - 6} textAnchor="middle" fontSize={9} fontFamily="monospace" className="fill-accent">
-        ● {nameA}
-      </text>
-    </svg>
+          </li>
+        ))}
+      </ol>
+    </div>
   );
 }
 
@@ -278,11 +273,11 @@ export default async function ComparePage({
                     axes={chartMetrics.map((m) => m.label)}
                     seriesA={chartMetrics.map((m) => m.get(aircraftA)!)}
                     seriesB={chartMetrics.map((m) => m.get(aircraftB)!)}
-                    nameA={aircraftA.name}
                   />
-                  <p className="mt-2 text-center font-mono text-[10px] uppercase tracking-widest text-gold">
-                    ● {aircraftB.name}
-                  </p>
+                  <div className="mt-3 flex justify-center gap-4 font-mono text-[10px] uppercase tracking-widest">
+                    <p className="text-accent">● {aircraftA.name}</p>
+                    <p className="text-gold">● {aircraftB.name}</p>
+                  </div>
                 </div>
               );
             })()}
