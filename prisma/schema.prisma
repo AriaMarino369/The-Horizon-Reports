@@ -459,6 +459,16 @@ model MilitaryAircraft {
   operatorsInRegion   String // JSON: {country, variant, approxCount, sources}[] — SEA operators only
   variants            String? // freeform fallback: used only where no AircraftVariant rows exist
   imageUrl            String?
+  // Orthographic (plan/side/top) 3-view line drawing, shown on the platform
+  // page alongside the photo — distinct from imageUrl above. Only ever
+  // populated from genuinely public-domain or Creative-Commons-licensed
+  // sources (e.g. Wikimedia Commons), never from paid/all-rights-reserved
+  // blueprint marketplaces — attribution fields are required because most
+  // qualifying licenses (CC-BY, CC-BY-SA) mandate crediting the author.
+  blueprintImageUrl   String?
+  blueprintLicense    String? // e.g. "CC BY-SA 3.0", "Public Domain"
+  blueprintSourceName String? // author/credit, e.g. "Kaboldy (Wikimedia Commons)"
+  blueprintSourceUrl  String? // the file's own source/description page, not just the raw image
   sources             String // JSON: {name,url}[] — platform-level sources (manufacturer/Jane's/etc.)
   // Global reference stats (type-level, not SEA-specific — distinct from operatorsInRegion)
   originCountry         String? // e.g. "United States" — country of origin/design
