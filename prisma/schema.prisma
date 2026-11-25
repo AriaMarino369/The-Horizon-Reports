@@ -547,6 +547,7 @@ model Weapon {
   manufacturer      String
   category          WeaponCategory
   description       String // 2-4 sentence overview
+  effectiveness     String? // combat record, kill claims, fire-and-forget/seeker performance, known limitations
   guidance          String? // e.g. "Active radar homing"
   rangeNm           Float?
   speed             String? // free text, e.g. "Mach 4"
