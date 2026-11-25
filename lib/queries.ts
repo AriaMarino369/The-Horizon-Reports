@@ -302,6 +302,20 @@ export async function getWeaponBySlug(slug: string) {
   });
 }
 
+/** Every published weapon, for the comparison picker — name/slug only. */
+export async function getWeaponPickerList() {
+  return db.weapon.findMany({
+    where: { status: "PUBLISHED" },
+    orderBy: { name: "asc" },
+    select: { slug: true, name: true },
+  });
+}
+
+/** One published weapon by slug, full record, for the comparison page. */
+export async function getWeaponForCompare(slug: string) {
+  return db.weapon.findFirst({ where: { slug, status: "PUBLISHED" } });
+}
+
 export async function getEnabledRegions(): Promise<Region[]> {
   const settings = await db.regionSetting.findMany();
   const disabled = new Set(settings.filter((s) => !s.enabled).map((s) => s.region));

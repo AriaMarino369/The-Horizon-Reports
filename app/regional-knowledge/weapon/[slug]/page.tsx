@@ -52,6 +52,22 @@ export default async function WeaponPage({ params }: { params: Promise<{ slug: s
 
         <p className="text-sm leading-relaxed text-foreground">{weapon.description}</p>
 
+        {weapon.effectiveness && (
+          <div>
+            <p className="stencil mb-2 text-xs tracking-widest text-muted">Effectiveness</p>
+            <p className="text-sm leading-relaxed text-foreground">{weapon.effectiveness}</p>
+          </div>
+        )}
+
+        <div className="flex items-center justify-between">
+          <p className="stencil text-xs tracking-widest text-muted">Technical Specifications</p>
+          <Link
+            href={`/regional-knowledge/weapon/compare?a=${weapon.slug}`}
+            className="font-mono text-[10px] uppercase tracking-widest text-accent hover:underline"
+          >
+            ⊞ Compare →
+          </Link>
+        </div>
         <div className="grid grid-cols-2 gap-4 rounded border border-border bg-panel p-4 sm:grid-cols-3">
           <Stat label="Guidance" value={weapon.guidance} />
           <Stat label="Range" value={weapon.rangeNm ? `${weapon.rangeNm} nm` : null} />
