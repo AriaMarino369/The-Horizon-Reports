@@ -83,20 +83,47 @@ export default async function AircraftPage({
           )}
         </div>
 
-        {view.imageUrl ? (
-          <div className="overflow-hidden rounded border border-border bg-panel-2">
-            {/* eslint-disable-next-line @next/next/no-img-element -- external, arbitrary-host photo */}
-            <img
-              src={proxiedImageUrl(view.imageUrl)}
-              alt={`${aircraft.name}${viewingOperator ? ` — ${viewingOperator.country}` : ""}`}
-              className="aspect-video w-full object-cover"
-            />
-          </div>
-        ) : (
-          <div className="overflow-hidden rounded border border-border">
-            <AircraftSilhouette role={aircraft.role} className="aspect-video w-full" />
-          </div>
-        )}
+        <div className={aircraft.blueprintImageUrl ? "grid gap-4 sm:grid-cols-2" : undefined}>
+          {aircraft.blueprintImageUrl && (
+            <div className="flex flex-col gap-1.5">
+              <div className="flex items-center justify-center overflow-hidden rounded border border-border bg-white p-2">
+                {/* eslint-disable-next-line @next/next/no-img-element -- external, arbitrary-host line drawing */}
+                <img
+                  src={proxiedImageUrl(aircraft.blueprintImageUrl)}
+                  alt={`${aircraft.name} 3-view plan/side/front line drawing`}
+                  className="aspect-video w-full object-contain"
+                />
+              </div>
+              {(aircraft.blueprintSourceName || aircraft.blueprintLicense) && (
+                <p className="font-mono text-[9px] text-muted">
+                  {aircraft.blueprintSourceUrl ? (
+                    <a href={aircraft.blueprintSourceUrl} target="_blank" rel="noopener noreferrer" className="hover:underline">
+                      {aircraft.blueprintSourceName ?? "Source"}
+                    </a>
+                  ) : (
+                    aircraft.blueprintSourceName
+                  )}
+                  {aircraft.blueprintLicense ? ` · ${aircraft.blueprintLicense}` : ""}
+                </p>
+              )}
+            </div>
+          )}
+
+          {view.imageUrl ? (
+            <div className="overflow-hidden rounded border border-border bg-panel-2">
+              {/* eslint-disable-next-line @next/next/no-img-element -- external, arbitrary-host photo */}
+              <img
+                src={proxiedImageUrl(view.imageUrl)}
+                alt={`${aircraft.name}${viewingOperator ? ` — ${viewingOperator.country}` : ""}`}
+                className="aspect-video w-full object-cover"
+              />
+            </div>
+          ) : (
+            <div className="overflow-hidden rounded border border-border">
+              <AircraftSilhouette role={aircraft.role} className="aspect-video w-full" />
+            </div>
+          )}
+        </div>
 
         <p className="text-sm leading-relaxed text-foreground">{view.description}</p>
 
