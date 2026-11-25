@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { decryptCookieValue, refreshSession, SESSION_COOKIE_NAME } from "@/lib/session";
+import { decryptCookieValue, refreshSession, isAdminOrAbove, SESSION_COOKIE_NAME } from "@/lib/session";
 
 const PUBLIC_PATHS = ["/login", "/admin/login"];
 
@@ -44,7 +44,7 @@ export async function proxy(request: NextRequest) {
   const refreshed = session ? await refreshSession(session) : null;
 
   if (pathname.startsWith("/admin")) {
-    if (session?.role !== "admin" || !refreshed) {
+    if (!isAdminOrAbove(session?.role) || !refreshed) {
       return clearSessionCookie(NextResponse.redirect(new URL("/admin/login", request.url)));
     }
     return withSessionCookie(NextResponse.next(), refreshed.token, refreshed.maxAgeSeconds);

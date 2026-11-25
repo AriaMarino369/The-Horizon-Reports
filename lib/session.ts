@@ -2,8 +2,17 @@ import "server-only";
 import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
 
-export type Role = "viewer" | "admin";
+// "master" sits a tier above "admin" — it satisfies every admin-only check
+// (see isAdminOrAbove below) plus anything master-specific added later, and
+// is granted only by the separate MASTER_PASSWORD, never by the regular
+// site/admin passwords.
+export type Role = "viewer" | "admin" | "master";
 type SessionPayload = { role: Role; loginAt: number };
+
+/** True for both "admin" and "master" — use this instead of `role === "admin"` wherever admin-tier access is gated, so master inherits every admin privilege. */
+export function isAdminOrAbove(role: Role | null | undefined): boolean {
+  return role === "admin" || role === "master";
+}
 
 const COOKIE_NAME = "fgi_session";
 
@@ -18,6 +27,7 @@ const ABSOLUTE_MAX_AGE_SECONDS = 60 * 60 * 24 * 30; // 30 days
 // longer window since it's actively used for longer editing sessions;
 // viewer is the public reading gate, so a shorter window matters more.
 const IDLE_TIMEOUT_SECONDS: Record<Role, number> = {
+  master: 2 * 60 * 60, // 2 hours
   admin: 60 * 60, // 1 hour
   viewer: 30 * 60, // 30 minutes
 };

@@ -631,3 +631,21 @@ model TrendingNewsRefreshRequest {
 
   @@index([status])
 }
+
+// Login brute-force throttle: one row per (scope, identifier) — scope is
+// "site" or "admin" (separate buckets, so failing one login form doesn't
+// lock the other), identifier is the caller's IP. Persisted in the DB
+// rather than in-memory since serverless functions don't share memory
+// across invocations/instances. lockedUntil is set once attempts reaches
+// the threshold, and attempts resets to 0 either on a successful login or
+// once the lock has expired (so the caller gets a fresh set of tries).
+model LoginThrottle {
+  id          String    @id @default(cuid())
+  scope       String // "site" | "admin"
+  identifier  String // caller IP (or "unknown" if not resolvable)
+  attempts    Int       @default(0)
+  lockedUntil DateTime?
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([scope, identifier])
+}

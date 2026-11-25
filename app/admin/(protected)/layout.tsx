@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { getSession } from "@/lib/session";
+import { getSession, isAdminOrAbove } from "@/lib/session";
 import { logoutAction } from "@/app/actions/auth";
 
 const TABS = [
@@ -15,7 +15,7 @@ const TABS = [
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const session = await getSession();
-  if (session?.role !== "admin") redirect("/admin/login");
+  if (!isAdminOrAbove(session?.role)) redirect("/admin/login");
 
   return (
     <>

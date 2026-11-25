@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
-import { getSession } from "@/lib/session";
+import { getSession, isAdminOrAbove } from "@/lib/session";
 import { generateDraftForRegion } from "@/lib/weeklyRun";
 import { publishArticle, refreshDigest } from "@/lib/publish";
 import { verifyImageUrl } from "@/lib/verifyImage";
@@ -27,7 +27,7 @@ const MAX_UPLOAD_BYTES = 4 * 1024 * 1024;
 
 async function requireAdmin() {
   const session = await getSession();
-  if (session?.role !== "admin") throw new Error("Not authorized.");
+  if (!isAdminOrAbove(session?.role)) throw new Error("Not authorized.");
 }
 
 export type AdminActionState = { error?: string; ok?: boolean } | undefined;
