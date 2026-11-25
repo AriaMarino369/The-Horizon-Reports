@@ -40,10 +40,10 @@ export default async function AircraftPage({
   searchParams,
 }: {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ country?: string }>;
+  searchParams: Promise<{ country?: string; variant?: string }>;
 }) {
   const { slug } = await params;
-  const { country } = await searchParams;
+  const { country, variant } = await searchParams;
   const aircraft = await getAircraftBySlug(slug);
   if (!aircraft) notFound();
 
@@ -55,8 +55,10 @@ export default async function AircraftPage({
 
   const sources: ArticleSource[] = JSON.parse(aircraft.sources);
   const operators = parseOperators(aircraft.operatorsInRegion);
-  const view = resolveAircraftView(aircraft, country);
-  const viewingOperator = operators.find((o) => o.country === country);
+  const view = resolveAircraftView(aircraft, country, variant);
+  const viewingOperator =
+    operators.find((o) => o.country === country && (variant ? o.variant === variant : true)) ??
+    operators.find((o) => o.country === country);
 
   const airbases = new Map(
     aircraft.units.filter((u) => u.airbase).map((u) => [u.airbase!.slug, u.airbase!])
@@ -278,10 +280,10 @@ export default async function AircraftPage({
               {operators.map((op, i) => (
                 <div
                   key={i}
-                  className={`rounded border p-3 text-sm ${op.country === country ? "border-accent bg-panel-2" : "border-border bg-panel"}`}
+                  className={`rounded border p-3 text-sm ${op.country === country && (op.variant ?? "") === (variant ?? "") ? "border-accent bg-panel-2" : "border-border bg-panel"}`}
                 >
                   <Link
-                    href={`/regional-knowledge/aircraft/${aircraft.slug}?country=${encodeURIComponent(op.country)}`}
+                    href={`/regional-knowledge/aircraft/${aircraft.slug}?country=${encodeURIComponent(op.country)}${op.variant ? `&variant=${encodeURIComponent(op.variant)}` : ""}`}
                     className="font-semibold text-accent hover:underline"
                   >
                     {COUNTRY_FLAGS[op.country] ?? ""} {op.country}

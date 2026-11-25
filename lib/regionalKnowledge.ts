@@ -142,10 +142,16 @@ export function parseOperators(operatorsInRegion: string): AircraftOperator[] {
  */
 export function resolveAircraftView(
   aircraft: { description: string; imageUrl: string | null; operatorsInRegion: string },
-  country?: string | null
+  country?: string | null,
+  variant?: string | null
 ): { imageUrl: string | null; description: string; operator: AircraftOperator | null } {
   const operators = parseOperators(aircraft.operatorsInRegion);
-  const operator = country ? (operators.find((o) => o.country === country) ?? null) : null;
+  // A country can appear more than once (e.g. two services of the same
+  // country operating the same airframe) — disambiguate by variant when
+  // given, otherwise fall back to the first entry for that country.
+  const countryMatches = country ? operators.filter((o) => o.country === country) : [];
+  const operator =
+    (variant ? countryMatches.find((o) => o.variant === variant) : undefined) ?? countryMatches[0] ?? null;
   if (operator?.researched) {
     return {
       imageUrl: operator.imageUrl ?? null,
